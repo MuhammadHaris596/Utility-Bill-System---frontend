@@ -43,7 +43,7 @@ const OldBillList = () => {
     setLoading(true);
     try {
       const { data } = await axios.get(
-        `/api/bills?search=${encodeURIComponent(searchTerm)}&page=${pageNum}&limit=${limitNum}`
+        `https://utility-bill-system-backend.vercel.app/api/bills?search=${encodeURIComponent(searchTerm)}&page=${pageNum}&limit=${limitNum}`
       );
 
       if (data && Array.isArray(data.bills)) {

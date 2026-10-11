@@ -47,7 +47,7 @@ const NotificationBell = () => {
   const fetchDueBills = async (showLoading = false) => {
     try {
       if (showLoading) setLoading(true);
-      const { data } = await axios.get('/api/bills/due-today');
+      const { data } = await axios.get('https://utility-bill-system-backend.vercel.app/api/bills/due-today');
 
       // Filter on frontend as well to strictly enforce same-day due dates
       const strictlyTodayBills = (data || []).filter((bill) => isDueToday(bill.billDueDate));

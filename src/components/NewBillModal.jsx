@@ -78,7 +78,7 @@ const NewBillModal = ({ isOpen, onClose, onBillCreated }) => {
         data.append('images', file);
       });
 
-      const response = await axios.post('/api/bills', data, {
+      const response = await axios.post('https://utility-bill-system-backend.vercel.app/api/bills', data, {
         headers: {
           'Content-Type': 'multipart/form-data',
         },
