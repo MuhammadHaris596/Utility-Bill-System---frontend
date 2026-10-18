@@ -22,6 +22,7 @@ import PrintBillModal from '../components/PrintBillModal';
 import NewBillModal from '../components/NewBillModal';
 import ViewBillModal from '../components/ViewBillModal';
 import EditBillModal from '../components/EditBillModal';
+import { formatDatePK, getRecordNumber } from '../utils/billUtils';
 
 const OldBillList = () => {
   const [bills, setBills] = useState([]);
@@ -43,7 +44,7 @@ const OldBillList = () => {
     setLoading(true);
     try {
       const { data } = await axios.get(
-        `https://utility-bill-system-backend.vercel.app/api/bills?search=${encodeURIComponent(searchTerm)}&page=${pageNum}&limit=${limitNum}`
+        `http://localhost:5000/api/bills?search=${encodeURIComponent(searchTerm)}&page=${pageNum}&limit=${limitNum}`
       );
 
       if (data && Array.isArray(data.bills)) {
@@ -64,6 +65,12 @@ const OldBillList = () => {
 
   useEffect(() => {
     fetchBills(search, page, limit);
+
+    const handleBillCreated = () => {
+      fetchBills(search, page, limit);
+    };
+    window.addEventListener('bill-created', handleBillCreated);
+    return () => window.removeEventListener('bill-created', handleBillCreated);
   }, [search, page, limit]);
 
   const handleSearchChange = (e) => {
@@ -78,21 +85,14 @@ const OldBillList = () => {
 
   const handleDeleteBill = async (id) => {
     try {
-      await axios.delete(`/api/bills/${id}`);
+      await axios.delete(`http://localhost:5000/api/bills/${id}`);
       fetchBills(search, page, limit);
     } catch (err) {
       alert(err.response?.data?.message || 'Failed to delete bill');
     }
   };
 
-  const formatDate = (dateStr) => {
-    if (!dateStr) return 'N/A';
-    return new Date(dateStr).toLocaleDateString('en-US', {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric',
-    });
-  };
+  const formatDate = (dateStr) => formatDatePK(dateStr);
 
   // Generate array of page numbers for pagination
   const getPageNumbers = () => {
@@ -117,37 +117,38 @@ const OldBillList = () => {
   return (
     <div style={{
       maxWidth: '1250px',
-      margin: '2rem auto',
-      padding: '0 1.5rem'
+      margin: 'clamp(1rem, 3vw, 2rem) auto',
+      padding: '0 clamp(0.75rem, 3vw, 1.5rem)',
+      width: '100%'
     }}>
       {/* Top Header & Search bar */}
       <div style={{
         display: 'flex',
         justifyContent: 'space-between',
         alignItems: 'center',
-        marginBottom: '2rem',
+        marginBottom: '1.5rem',
         flexWrap: 'wrap',
         gap: '1rem'
       }}>
-        <div>
-          <h1 style={{ fontSize: '1.75rem', fontWeight: '800', color: 'var(--text-main)', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-            <FileText color="var(--primary)" size={28} />
+        <div style={{ flex: '1 1 260px' }}>
+          <h1 style={{ fontSize: 'clamp(1.3rem, 4vw, 1.75rem)', fontWeight: '800', color: 'var(--text-main)', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+            <FileText color="var(--primary)" size={26} />
             Utility Bill Records (Old Bills)
           </h1>
-          <p style={{ color: 'var(--text-muted)', fontSize: '0.875rem', marginTop: '0.2rem' }}>
+          <p style={{ color: 'var(--text-muted)', fontSize: '0.85rem', marginTop: '0.2rem' }}>
             Total {totalBills} bill records logged in database.
           </p>
         </div>
 
-        <div style={{ display: 'flex', gap: '1rem', alignItems: 'center' }}>
+        <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'center', flexWrap: 'wrap', width: '100%', maxWidth: '480px' }}>
           {/* Search Box */}
-          <div style={{ position: 'relative', width: '300px' }}>
+          <div style={{ position: 'relative', flex: '1 1 200px', minWidth: 'min(200px, 100%)' }}>
             <Search size={18} color="var(--text-dim)" style={{ position: 'absolute', left: '1rem', top: '50%', transform: 'translateY(-50%)' }} />
             <input
               type="text"
               value={search}
               onChange={handleSearchChange}
-              placeholder="Search ID, name, phone, comment..."
+              placeholder="Search Record No, Bill No, name, phone..."
               style={{
                 width: '100%',
                 padding: '0.65rem 1rem 0.65rem 2.5rem',
@@ -155,7 +156,7 @@ const OldBillList = () => {
                 border: '1px solid var(--border-color)',
                 borderRadius: 'var(--radius-sm)',
                 color: 'var(--text-main)',
-                fontSize: '0.9rem',
+                fontSize: '0.875rem',
                 outline: 'none'
               }}
             />
@@ -170,12 +171,13 @@ const OldBillList = () => {
               borderRadius: 'var(--radius-sm)',
               color: '#fff',
               fontWeight: '700',
-              fontSize: '0.9rem',
+              fontSize: '0.875rem',
               cursor: 'pointer',
               display: 'flex',
               alignItems: 'center',
               gap: '0.4rem',
-              boxShadow: '0 4px 15px rgba(99, 102, 241, 0.3)'
+              boxShadow: '0 4px 15px rgba(99, 102, 241, 0.3)',
+              whiteSpace: 'nowrap'
             }}
           >
             <PlusCircle size={18} />
@@ -201,15 +203,15 @@ const OldBillList = () => {
             No bill records found matching your search.
           </div>
         ) : (
-          <div style={{ overflowX: 'auto' }}>
+          <div style={{ overflowX: 'auto', WebkitOverflowScrolling: 'touch' }}>
             <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', fontSize: '0.9rem' }}>
               <thead>
                 <tr style={{ background: 'rgba(15, 23, 42, 0.8)', borderBottom: '1px solid var(--border-color)' }}>
-                  <th style={{ padding: '1rem 1.25rem', color: 'var(--text-muted)', fontWeight: '600' }}>Bill ID</th>
-                  <th style={{ padding: '1rem 1.25rem', color: 'var(--text-muted)', fontWeight: '600' }}>Bill Name & Price</th>
-                  <th style={{ padding: '1rem 1.25rem', color: 'var(--text-muted)', fontWeight: '600' }}>Customer / User</th>
+                  <th style={{ padding: '1rem 1.25rem', color: 'var(--text-muted)', fontWeight: '600' }}>Bill No</th>
+                  <th style={{ padding: '1rem 1.25rem', color: 'var(--text-muted)', fontWeight: '600' }}>Bill Price</th>
+                  <th style={{ padding: '1rem 1.25rem', color: 'var(--text-muted)', fontWeight: '600' }}>Bill Name & User ID</th>
                   <th style={{ padding: '1rem 1.25rem', color: 'var(--text-muted)', fontWeight: '600' }}>Contact Phone</th>
-                  <th style={{ padding: '1rem 1.25rem', color: 'var(--text-muted)', fontWeight: '600' }}>Entry & Due Date</th>
+                  <th style={{ padding: '1rem 1.25rem', color: 'var(--text-muted)', fontWeight: '600' }}>Entry Date</th>
                   <th style={{ padding: '1rem 1.25rem', color: 'var(--text-muted)', fontWeight: '600' }}>Comment / Docs</th>
                   <th style={{ padding: '1rem 1.25rem', color: 'var(--text-muted)', fontWeight: '600', textAlign: 'right' }}>Actions</th>
                 </tr>
@@ -225,30 +227,51 @@ const OldBillList = () => {
                     onMouseEnter={(e) => e.currentTarget.style.background = 'rgba(99, 102, 241, 0.05)'}
                     onMouseLeave={(e) => e.currentTarget.style.background = 'transparent'}
                   >
-                    {/* Bill ID */}
+                    {/* Record Number & Bill No */}
                     <td
-                      style={{ padding: '1rem 1.25rem', fontWeight: '700', color: 'var(--accent-cyan)', cursor: 'pointer' }}
+                      style={{ padding: '0.85rem 1.25rem', cursor: 'pointer' }}
                       onClick={() => setSelectedBillForView(bill)}
                       title="Click to view details"
                     >
-                      {bill.billId}
+                      <div style={{
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        background: 'rgba(99, 102, 241, 0.15)',
+                        color: 'var(--primary)',
+                        border: '1px solid rgba(99, 102, 241, 0.3)',
+                        padding: '0.15rem 0.5rem',
+                        borderRadius: '4px',
+                        fontSize: '0.75rem',
+                        fontWeight: '700',
+                        letterSpacing: '0.05em',
+                        marginBottom: '0.25rem'
+                      }}>
+                        {getRecordNumber(bill)}
+                      </div>
+                      <div style={{ fontWeight: '700', color: 'var(--accent-cyan)' }}>
+                        {bill.billId}
+                      </div>
                     </td>
 
-                    {/* Bill Name & Price */}
+                    {/* Bill Price */}
                     <td
                       style={{ padding: '1rem 1.25rem', cursor: 'pointer' }}
                       onClick={() => setSelectedBillForView(bill)}
                     >
-                      <div style={{ fontWeight: '600', color: 'var(--text-main)' }}>{bill.billName}</div>
-                      <div style={{ fontSize: '0.85rem', color: 'var(--accent-emerald)', fontWeight: '700', marginTop: '0.1rem' }}>
+                      <div style={{ fontSize: '1.05rem', color: 'var(--accent-emerald)', fontWeight: '800' }}>
                         PKR {bill.amount ? Number(bill.amount).toLocaleString() : '0'}
                       </div>
                     </td>
 
-                    {/* Customer */}
+                    {/* Bill Name & User ID (in place of Customer) */}
                     <td style={{ padding: '1rem 1.25rem' }}>
-                      <div style={{ fontWeight: '600', color: 'var(--text-main)' }}>{bill.username}</div>
-                      <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>ID: {bill.userId}</div>
+                      <div style={{ fontSize: '0.68rem', color: 'var(--text-dim)', textTransform: 'uppercase', fontWeight: '700', letterSpacing: '0.04em', marginBottom: '0.1rem' }}>
+                        Bill Name:
+                      </div>
+                      <div style={{ fontWeight: '700', color: 'var(--text-main)', fontSize: '0.95rem' }}>{bill.billName}</div>
+                      <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginTop: '0.15rem' }}>
+                        User ID: <span style={{ color: 'var(--text-main)', fontWeight: '600' }}>{bill.userId}</span>
+                      </div>
                     </td>
 
                     {/* Phone */}
@@ -256,10 +279,11 @@ const OldBillList = () => {
                       {bill.phoneNumber}
                     </td>
 
-                    {/* Dates */}
+                    {/* Entry Date */}
                     <td style={{ padding: '1rem 1.25rem' }}>
-                      <div style={{ fontSize: '0.85rem', color: 'var(--text-main)' }}>Entry: {formatDate(bill.billEntryDate)}</div>
-                      <div style={{ fontSize: '0.75rem', color: 'var(--accent-rose)' }}>Due: {formatDate(bill.billDueDate)}</div>
+                      <div style={{ fontSize: '0.85rem', color: 'var(--text-main)', fontWeight: '600' }}>
+                        {formatDate(bill.billEntryDate)}
+                      </div>
                     </td>
 
                     {/* Comment & Docs */}
@@ -346,6 +370,35 @@ const OldBillList = () => {
                           Edit
                         </button>
 
+                        {/* DELETE BUTTON */}
+                        <button
+                          onClick={() => {
+                            if (window.confirm(`Are you sure you want to delete bill "${bill.billName}" (${bill.billId})?`)) {
+                              handleDeleteBill(bill._id);
+                            }
+                          }}
+                          title="Delete Bill"
+                          style={{
+                            background: 'rgba(244, 63, 94, 0.15)',
+                            border: '1px solid rgba(244, 63, 94, 0.4)',
+                            color: 'var(--accent-rose, #f43f5e)',
+                            padding: '0.45rem 0.75rem',
+                            borderRadius: '8px',
+                            fontWeight: '600',
+                            fontSize: '0.8rem',
+                            cursor: 'pointer',
+                            display: 'inline-flex',
+                            alignItems: 'center',
+                            gap: '0.3rem',
+                            transition: 'all 0.2s'
+                          }}
+                          onMouseEnter={(e) => e.currentTarget.style.background = 'rgba(244, 63, 94, 0.3)'}
+                          onMouseLeave={(e) => e.currentTarget.style.background = 'rgba(244, 63, 94, 0.15)'}
+                        >
+                          <Trash2 size={14} />
+                          Delete
+                        </button>
+
                         {/* PRINT BUTTON */}
                         <button
                           onClick={() => setSelectedBillForPrint(bill)}
@@ -425,7 +478,7 @@ const OldBillList = () => {
               </div>
 
               {/* Page Buttons Controls */}
-              <div style={{ display: 'flex', gap: '0.35rem', alignItems: 'center' }}>
+              <div style={{ display: 'flex', gap: '0.35rem', alignItems: 'center', flexWrap: 'wrap' }}>
                 {/* FIRST PAGE */}
                 <button
                   onClick={() => setPage(1)}

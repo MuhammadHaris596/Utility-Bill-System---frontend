@@ -1,5 +1,6 @@
 import React from 'react';
-import { X, Printer, Receipt, Calendar, User, Phone, Tag } from 'lucide-react';
+import { X, Printer, Receipt, Calendar, User, Phone, Tag, Hash } from 'lucide-react';
+import { formatDatePK, getRecordNumber } from '../utils/billUtils';
 
 const PrintBillModal = ({ bill, onClose }) => {
   if (!bill) return null;
@@ -8,14 +9,7 @@ const PrintBillModal = ({ bill, onClose }) => {
     window.print();
   };
 
-  const formatDate = (dateStr) => {
-    if (!dateStr) return 'N/A';
-    return new Date(dateStr).toLocaleDateString('en-US', {
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric',
-    });
-  };
+  const formatDate = (dateStr) => formatDatePK(dateStr);
 
   return (
     <div style={{
@@ -30,7 +24,7 @@ const PrintBillModal = ({ bill, onClose }) => {
       alignItems: 'center',
       justifyContent: 'center',
       zIndex: 2000,
-      padding: '1.5rem'
+      padding: 'clamp(0.5rem, 2vw, 1.5rem)'
     }}>
       <div style={{
         background: '#ffffff',
@@ -38,21 +32,23 @@ const PrintBillModal = ({ bill, onClose }) => {
         borderRadius: '16px',
         width: '100%',
         maxWidth: '700px',
-        maxHeight: '90vh',
+        maxHeight: '92vh',
         overflowY: 'auto',
         boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.5)',
-        padding: '2.5rem',
+        padding: 'clamp(1rem, 3.5vw, 2.5rem)',
         position: 'relative'
       }} className="printable-container">
-        
+
         {/* Controls - Hidden on Print */}
         <div className="no-print" style={{
           display: 'flex',
           justifyContent: 'space-between',
           alignItems: 'center',
-          marginBottom: '2rem',
+          marginBottom: '1.5rem',
           borderBottom: '1px solid #e2e8f0',
-          paddingBottom: '1rem'
+          paddingBottom: '1rem',
+          flexWrap: 'wrap',
+          gap: '0.75rem'
         }}>
           <h3 style={{ color: '#0f172a', fontWeight: '700', fontSize: '1.2rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
             <Receipt color="#4f46e5" size={20} />
@@ -119,20 +115,33 @@ const PrintBillModal = ({ bill, onClose }) => {
                 background: '#e0e7ff',
                 color: '#3730a3',
                 fontWeight: '700',
-                padding: '0.4rem 0.8rem',
+                padding: '0.25rem 0.6rem',
+                borderRadius: '6px',
+                fontSize: '0.8rem',
+                display: 'inline-block',
+                marginBottom: '0.35rem'
+              }}>
+                Record No: #{getRecordNumber(bill)}
+              </div>
+              <br />
+              <div style={{
+                background: '#f1f5f9',
+                color: '#0f172a',
+                fontWeight: '700',
+                padding: '0.25rem 0.6rem',
                 borderRadius: '6px',
                 fontSize: '0.85rem',
                 display: 'inline-block'
               }}>
-                ID: {bill.billId}
+                Bill No: {bill.billId}
               </div>
-              <div style={{ fontSize: '0.8rem', color: '64748b', marginTop: '0.4rem' }}>
+              <div style={{ fontSize: '0.8rem', color: '#64748b', marginTop: '0.4rem' }}>
                 Logged on: {formatDate(bill.createdAt)}
               </div>
             </div>
           </div>
 
-          {/* Customer & Bill Details Grid */}
+          {/* Bill & User Details Grid */}
           <div style={{
             display: 'grid',
             gridTemplateColumns: '1fr 1fr',
@@ -145,15 +154,15 @@ const PrintBillModal = ({ bill, onClose }) => {
           }}>
             <div>
               <div style={{ fontSize: '0.75rem', fontWeight: '700', color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '0.5rem' }}>
-                Customer Information
+                User & Contact Details
               </div>
-              <div style={{ fontSize: '1rem', fontWeight: '700', color: '#0f172a', marginBottom: '0.2rem' }}>
-                {bill.username}
+              <div style={{ fontSize: '0.875rem', color: '#475569', marginBottom: '0.2rem' }}>
+                Bill Name: <strong style={{ color: '#0f172a' }}>{bill.billName}</strong>
               </div>
-              <div style={{ fontSize: '0.875rem', color: '475569' }}>
+              <div style={{ fontSize: '0.875rem', color: '#475569', marginBottom: '0.2rem' }}>
                 User ID: <strong>{bill.userId}</strong>
               </div>
-              <div style={{ fontSize: '0.875rem', color: '475569' }}>
+              <div style={{ fontSize: '0.875rem', color: '#475569' }}>
                 Phone: <strong>{bill.phoneNumber}</strong>
               </div>
             </div>
@@ -162,14 +171,8 @@ const PrintBillModal = ({ bill, onClose }) => {
               <div style={{ fontSize: '0.75rem', fontWeight: '700', color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '0.5rem' }}>
                 Bill Information
               </div>
-              <div style={{ fontSize: '1rem', fontWeight: '700', color: '#4f46e5', marginBottom: '0.2rem' }}>
-                {bill.billName}
-              </div>
               <div style={{ fontSize: '0.875rem', color: '#475569' }}>
                 Entry Date: <strong>{formatDate(bill.billEntryDate)}</strong>
-              </div>
-              <div style={{ fontSize: '0.875rem', color: '#dc2626', fontWeight: '600' }}>
-                Due Date: <strong>{formatDate(bill.billDueDate)}</strong>
               </div>
               <div style={{ fontSize: '1rem', color: '#16a34a', fontWeight: '800', marginTop: '0.4rem' }}>
                 Amount: PKR {bill.amount ? Number(bill.amount).toLocaleString() : '0'}

@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import { X, Upload, Edit, CheckCircle, AlertCircle, Trash2 } from 'lucide-react';
+import { X, Upload, Edit, CheckCircle, AlertCircle, Trash2, ChevronLeft, ChevronRight, Eye } from 'lucide-react';
 import AutocompleteInput from './AutocompleteInput';
+import ToggleSwitch from './ToggleSwitch';
 
 const EditBillModal = ({ bill, isOpen, onClose, onBillUpdated }) => {
   const [formData, setFormData] = useState({
@@ -16,15 +17,35 @@ const EditBillModal = ({ bill, isOpen, onClose, onBillUpdated }) => {
     comment: '',
   });
 
+  const [notify, setNotify] = useState(() => Boolean(bill?.notify));
+
   const [existingImages, setExistingImages] = useState([]);
   const [newFiles, setNewFiles] = useState([]);
   const [newPreviews, setNewPreviews] = useState([]);
+  const [selectedImageIndex, setSelectedImageIndex] = useState(null);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState(false);
 
+  const allImages = [...existingImages, ...newPreviews];
+
   useEffect(() => {
-    if (bill) {
+    const handleKeyDown = (e) => {
+      if (selectedImageIndex === null) return;
+      if (e.key === 'Escape') setSelectedImageIndex(null);
+      if (e.key === 'ArrowLeft') {
+        setSelectedImageIndex((prev) => (prev > 0 ? prev - 1 : allImages.length - 1));
+      }
+      if (e.key === 'ArrowRight') {
+        setSelectedImageIndex((prev) => (prev < allImages.length - 1 ? prev + 1 : 0));
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [selectedImageIndex, allImages.length]);
+
+  useEffect(() => {
+    if (bill && isOpen) {
       setFormData({
         billId: bill.billId || '',
         billName: bill.billName || '',
@@ -36,13 +57,14 @@ const EditBillModal = ({ bill, isOpen, onClose, onBillUpdated }) => {
         amount: bill.amount !== undefined ? bill.amount : '',
         comment: bill.comment || '',
       });
+      setNotify(Boolean(bill.notify));
       setExistingImages(bill.images || []);
       setNewFiles([]);
       setNewPreviews([]);
       setError('');
       setSuccess(false);
     }
-  }, [bill]);
+  }, [bill, isOpen]);
 
   if (!isOpen || !bill) return null;
 
@@ -61,10 +83,6 @@ const EditBillModal = ({ bill, isOpen, onClose, onBillUpdated }) => {
 
   const handleFileChange = (e) => {
     const selectedFiles = Array.from(e.target.files);
-    if (selectedFiles.length + existingImages.length + newFiles.length > 5) {
-      setError('Maximum 5 images total per bill.');
-      return;
-    }
     setError('');
     setNewFiles([...newFiles, ...selectedFiles]);
     const previews = selectedFiles.map((file) => URL.createObjectURL(file));
@@ -96,6 +114,7 @@ const EditBillModal = ({ bill, isOpen, onClose, onBillUpdated }) => {
       data.append('billDueDate', formData.billDueDate);
       data.append('amount', formData.amount);
       data.append('comment', formData.comment);
+      data.append('notify', notify ? 'true' : 'false');
 
       existingImages.forEach((img) => {
         data.append('existingImages', img);
@@ -105,14 +124,23 @@ const EditBillModal = ({ bill, isOpen, onClose, onBillUpdated }) => {
         data.append('images', file);
       });
 
-      const response = await axios.put(`https://utility-bill-system-backend.vercel.app/api/bills/${bill._id}`, data, {
-        headers: {
-          'Content-Type': 'multipart/form-data',
-        },
+      const token = localStorage.getItem('adminToken');
+      const headers = {};
+      if (token) {
+        headers['Authorization'] = `Bearer ${token}`;
+      }
+
+      const response = await axios.put(`http://localhost:5000/api/bills/${bill._id}`, data, {
+        headers,
       });
 
+      const wasNewlyEnabled = !Boolean(bill.notify) && Boolean(notify);
       setSuccess(true);
-      window.dispatchEvent(new CustomEvent('bill-updated', { detail: response.data }));
+      window.dispatchEvent(
+        new CustomEvent('bill-updated', {
+          detail: { bill: response.data, wasNewlyEnabled },
+        })
+      );
       setTimeout(() => {
         setSuccess(false);
         if (onBillUpdated) onBillUpdated(response.data);
@@ -126,7 +154,8 @@ const EditBillModal = ({ bill, isOpen, onClose, onBillUpdated }) => {
   };
 
   return (
-    <div style={{
+    <>
+      <div style={{
       position: 'fixed',
       top: 0,
       left: 0,
@@ -138,7 +167,7 @@ const EditBillModal = ({ bill, isOpen, onClose, onBillUpdated }) => {
       alignItems: 'flex-start',
       justifyContent: 'center',
       zIndex: 99999,
-      padding: '2rem 1rem',
+      padding: 'clamp(0.5rem, 2vw, 1.5rem) clamp(0.5rem, 2vw, 1rem)',
       overflowY: 'auto'
     }}>
       <div style={{
@@ -147,20 +176,21 @@ const EditBillModal = ({ bill, isOpen, onClose, onBillUpdated }) => {
         borderRadius: 'var(--radius-lg)',
         width: '100%',
         maxWidth: '650px',
-        maxHeight: 'calc(100vh - 4rem)',
+        maxHeight: 'calc(100vh - 2rem)',
         overflowY: 'auto',
         boxShadow: 'var(--glass-shadow)',
-        padding: '2rem',
+        padding: 'clamp(1rem, 3.5vw, 2rem)',
         position: 'relative',
         margin: 'auto 0'
       }}>
         {/* Close Button */}
         <button
+          type="button"
           onClick={onClose}
           style={{
             position: 'absolute',
-            top: '1.25rem',
-            right: '1.25rem',
+            top: '0.85rem',
+            right: '0.85rem',
             background: 'rgba(255,255,255,0.05)',
             border: 'none',
             color: 'var(--text-muted)',
@@ -177,12 +207,19 @@ const EditBillModal = ({ bill, isOpen, onClose, onBillUpdated }) => {
         </button>
 
         {/* Modal Header */}
-        <div style={{ marginBottom: '1.5rem' }}>
-          <h2 style={{ fontSize: '1.5rem', fontWeight: '700', color: 'var(--text-main)', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-            <Edit color="var(--primary)" size={24} />
-            Update Bill Record
-          </h2>
-          <p style={{ color: 'var(--text-muted)', fontSize: '0.875rem', marginTop: '0.2rem' }}>
+        <div style={{ marginBottom: '1.5rem', paddingRight: '2.5rem' }}>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '0.75rem', flexWrap: 'wrap' }}>
+            <h2 style={{ fontSize: 'clamp(1.2rem, 3.5vw, 1.5rem)', fontWeight: '700', color: 'var(--text-main)', display: 'flex', alignItems: 'center', gap: '0.5rem', margin: 0 }}>
+              <Edit color="var(--primary)" size={24} />
+              Update Bill Record
+            </h2>
+            <ToggleSwitch
+              label="Add to Notification"
+              checked={notify}
+              onChange={setNotify}
+            />
+          </div>
+          <p style={{ color: 'var(--text-muted)', fontSize: '0.875rem', marginTop: '0.25rem' }}>
             Modify any field of this utility bill entry and click Save Changes.
           </p>
         </div>
@@ -225,10 +262,10 @@ const EditBillModal = ({ bill, isOpen, onClose, onBillUpdated }) => {
 
         <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
           {/* Row 1: Bill ID & Bill Name */}
-          <div style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap' }}>
-            <div style={{ flex: 1, minWidth: '220px' }}>
+          <div style={{ display: 'flex', gap: '0.85rem', flexWrap: 'wrap' }}>
+            <div style={{ flex: 1, minWidth: 'min(200px, 100%)' }}>
               <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: '600', color: 'var(--text-muted)', marginBottom: '0.4rem' }}>
-                Bill ID <span style={{ color: 'var(--accent-rose)' }}>*</span>
+                Bill No <span style={{ color: 'var(--accent-rose)' }}>*</span>
               </label>
               <input
                 type="text"
@@ -248,7 +285,7 @@ const EditBillModal = ({ bill, isOpen, onClose, onBillUpdated }) => {
               />
             </div>
 
-            <div style={{ flex: 1, minWidth: '220px' }}>
+            <div style={{ flex: 1, minWidth: 'min(200px, 100%)' }}>
               <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: '600', color: 'var(--text-muted)', marginBottom: '0.4rem' }}>
                 Bill Name <span style={{ color: 'var(--accent-rose)' }}>*</span>
               </label>
@@ -294,17 +331,20 @@ const EditBillModal = ({ bill, isOpen, onClose, onBillUpdated }) => {
             />
           </div>
 
-          {/* Row 3: Username */}
+
+          {/* Amount */}
           <div>
             <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: '600', color: 'var(--text-muted)', marginBottom: '0.4rem' }}>
-              Username / Customer Name <span style={{ color: 'var(--accent-rose)' }}>*</span>
+              Bill Price / Amount (PKR) <span style={{ color: 'var(--accent-rose)' }}>*</span>
             </label>
             <input
-              type="text"
-              name="username"
-              value={formData.username}
+              type="number"
+              name="amount"
+              value={formData.amount}
               onChange={handleChange}
               required
+              min="0"
+              step="any"
               style={{
                 width: '100%',
                 padding: '0.75rem 1rem',
@@ -317,99 +357,54 @@ const EditBillModal = ({ bill, isOpen, onClose, onBillUpdated }) => {
             />
           </div>
 
-          {/* Row 4: Dates & Amount */}
-          <div style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap' }}>
-            <div style={{ flex: 1, minWidth: '180px' }}>
-              <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: '600', color: 'var(--text-muted)', marginBottom: '0.4rem' }}>
-                Bill Entry Date <span style={{ color: 'var(--accent-rose)' }}>*</span>
-              </label>
-              <input
-                type="date"
-                name="billEntryDate"
-                value={formData.billEntryDate}
-                onChange={handleChange}
-                required
-                style={{
-                  width: '100%',
-                  padding: '0.75rem 1rem',
-                  background: 'rgba(15, 23, 42, 0.6)',
-                  border: '1px solid var(--border-color)',
-                  borderRadius: 'var(--radius-sm)',
-                  color: 'var(--text-main)',
-                  outline: 'none'
-                }}
-              />
-            </div>
-
-            <div style={{ flex: 1, minWidth: '180px' }}>
-              <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: '600', color: 'var(--text-muted)', marginBottom: '0.4rem' }}>
-                Bill Due Date <span style={{ color: 'var(--accent-rose)' }}>*</span>
-              </label>
-              <input
-                type="date"
-                name="billDueDate"
-                value={formData.billDueDate}
-                onChange={handleChange}
-                required
-                style={{
-                  width: '100%',
-                  padding: '0.75rem 1rem',
-                  background: 'rgba(15, 23, 42, 0.6)',
-                  border: '1px solid var(--border-color)',
-                  borderRadius: 'var(--radius-sm)',
-                  color: 'var(--text-main)',
-                  outline: 'none'
-                }}
-              />
-            </div>
-
-            <div style={{ flex: 1, minWidth: '180px' }}>
-              <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: '600', color: 'var(--text-muted)', marginBottom: '0.4rem' }}>
-                Bill Price / Amount (PKR) <span style={{ color: 'var(--accent-rose)' }}>*</span>
-              </label>
-              <input
-                type="number"
-                name="amount"
-                value={formData.amount}
-                onChange={handleChange}
-                required
-                min="0"
-                step="any"
-                style={{
-                  width: '100%',
-                  padding: '0.75rem 1rem',
-                  background: 'rgba(15, 23, 42, 0.6)',
-                  border: '1px solid var(--border-color)',
-                  borderRadius: 'var(--radius-sm)',
-                  color: 'var(--text-main)',
-                  outline: 'none'
-                }}
-              />
-            </div>
-          </div>
-
           {/* Manage Images */}
           <div>
             <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: '600', color: 'var(--text-muted)', marginBottom: '0.4rem' }}>
-              Manage Attached Images (Max 5 total)
+              Manage Attached Images
             </label>
 
             {/* Existing Images list */}
             {existingImages.length > 0 && (
               <div style={{ marginBottom: '1rem' }}>
-                <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginBottom: '0.4rem' }}>Current Images:</div>
+                <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginBottom: '0.4rem' }}>Current Images (click to expand):</div>
                 <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap' }}>
                   {existingImages.map((src, idx) => (
-                    <div key={idx} style={{ position: 'relative', width: '65px', height: '65px', borderRadius: '8px', overflow: 'hidden', border: '1px solid var(--border-color)' }}>
+                    <div
+                      key={idx}
+                      onClick={() => setSelectedImageIndex(idx)}
+                      style={{
+                        position: 'relative',
+                        width: '72px',
+                        height: '72px',
+                        borderRadius: '8px',
+                        overflow: 'hidden',
+                        border: '1px solid var(--border-color)',
+                        cursor: 'pointer',
+                        transition: 'transform 0.2s, border-color 0.2s',
+                        background: 'rgba(15, 23, 42, 0.8)'
+                      }}
+                      onMouseEnter={(e) => {
+                        e.currentTarget.style.transform = 'scale(1.05)';
+                        e.currentTarget.style.borderColor = 'var(--accent-cyan)';
+                      }}
+                      onMouseLeave={(e) => {
+                        e.currentTarget.style.transform = 'scale(1)';
+                        e.currentTarget.style.borderColor = 'var(--border-color)';
+                      }}
+                      title="Click to view full photo"
+                    >
                       <img src={src} alt="existing" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                       <button
                         type="button"
-                        onClick={() => handleRemoveExistingImage(idx)}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleRemoveExistingImage(idx);
+                        }}
                         style={{
                           position: 'absolute',
                           top: '2px',
                           right: '2px',
-                          background: 'rgba(244,63,94,0.85)',
+                          background: 'rgba(244,63,94,0.9)',
                           color: '#fff',
                           border: 'none',
                           borderRadius: '50%',
@@ -418,8 +413,10 @@ const EditBillModal = ({ bill, isOpen, onClose, onBillUpdated }) => {
                           display: 'flex',
                           alignItems: 'center',
                           justifyContent: 'center',
-                          cursor: 'pointer'
+                          cursor: 'pointer',
+                          zIndex: 5
                         }}
+                        title="Remove image"
                       >
                         <X size={12} />
                       </button>
@@ -464,11 +461,37 @@ const EditBillModal = ({ bill, isOpen, onClose, onBillUpdated }) => {
             {newPreviews.length > 0 && (
               <div style={{ display: 'flex', gap: '0.75rem', marginTop: '0.75rem', flexWrap: 'wrap' }}>
                 {newPreviews.map((src, index) => (
-                  <div key={index} style={{ position: 'relative', width: '65px', height: '65px', borderRadius: '8px', overflow: 'hidden', border: '1px solid var(--primary)' }}>
+                  <div
+                    key={index}
+                    onClick={() => setSelectedImageIndex(existingImages.length + index)}
+                    style={{
+                      position: 'relative',
+                      width: '72px',
+                      height: '72px',
+                      borderRadius: '8px',
+                      overflow: 'hidden',
+                      border: '1px solid var(--primary)',
+                      cursor: 'pointer',
+                      transition: 'transform 0.2s, border-color 0.2s',
+                      background: 'rgba(15, 23, 42, 0.8)'
+                    }}
+                    onMouseEnter={(e) => {
+                      e.currentTarget.style.transform = 'scale(1.05)';
+                      e.currentTarget.style.borderColor = 'var(--accent-cyan)';
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.transform = 'scale(1)';
+                      e.currentTarget.style.borderColor = 'var(--primary)';
+                    }}
+                    title="Click to view full photo"
+                  >
                     <img src={src} alt="new preview" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                     <button
                       type="button"
-                      onClick={() => handleRemoveNewFile(index)}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleRemoveNewFile(index);
+                      }}
                       style={{
                         position: 'absolute',
                         top: '2px',
@@ -482,8 +505,10 @@ const EditBillModal = ({ bill, isOpen, onClose, onBillUpdated }) => {
                         display: 'flex',
                         alignItems: 'center',
                         justifyContent: 'center',
-                        cursor: 'pointer'
+                        cursor: 'pointer',
+                        zIndex: 5
                       }}
+                      title="Remove preview"
                     >
                       <X size={12} />
                     </button>
@@ -555,7 +580,220 @@ const EditBillModal = ({ bill, isOpen, onClose, onBillUpdated }) => {
         </form>
       </div>
     </div>
-  );
+
+    {/* Expanded Interactive Lightbox Slider with Next/Prev Arrow Buttons */}
+    {selectedImageIndex !== null && allImages.length > 0 && (
+      <div
+        style={{
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          background: 'rgba(5, 8, 15, 0.95)',
+          backdropFilter: 'blur(16px)',
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          justifyContent: 'center',
+          zIndex: 100005,
+          padding: '1.5rem'
+        }}
+        onClick={() => setSelectedImageIndex(null)}
+      >
+        {/* Header Bar in Lightbox */}
+        <div
+          style={{
+            position: 'absolute',
+            top: '1.5rem',
+            left: '2rem',
+            right: '2rem',
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+            color: '#fff',
+            zIndex: 100010
+          }}
+          onClick={(e) => e.stopPropagation()}
+        >
+          <div style={{ fontSize: '0.95rem', fontWeight: '700', background: 'rgba(255, 255, 255, 0.1)', padding: '0.4rem 1rem', borderRadius: '20px' }}>
+            Document {selectedImageIndex + 1} of {allImages.length}
+          </div>
+
+          <button
+            type="button"
+            onClick={() => setSelectedImageIndex(null)}
+            style={{
+              background: 'rgba(255, 255, 255, 0.15)',
+              border: 'none',
+              color: '#fff',
+              width: '40px',
+              height: '40px',
+              borderRadius: '50%',
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              transition: 'background 0.2s'
+            }}
+            onMouseEnter={(e) => (e.currentTarget.style.background = 'rgba(244, 63, 94, 0.8)')}
+            onMouseLeave={(e) => (e.currentTarget.style.background = 'rgba(255, 255, 255, 0.15)')}
+            title="Close Lightbox (Esc)"
+          >
+            <X size={22} />
+          </button>
+        </div>
+
+        {/* LEFT ARROW BUTTON */}
+        {allImages.length > 1 && (
+          <button
+            type="button"
+            onClick={(e) => {
+              e.stopPropagation();
+              setSelectedImageIndex((prev) => (prev > 0 ? prev - 1 : allImages.length - 1));
+            }}
+            style={{
+              position: 'absolute',
+              left: '2rem',
+              top: '50%',
+              transform: 'translateY(-50%)',
+              background: 'rgba(15, 23, 42, 0.8)',
+              border: '1px solid rgba(255, 255, 255, 0.2)',
+              color: '#fff',
+              width: '56px',
+              height: '56px',
+              borderRadius: '50%',
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              boxShadow: '0 8px 25px rgba(0, 0, 0, 0.5)',
+              transition: 'all 0.2s',
+              zIndex: 100010
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.background = 'var(--primary)';
+              e.currentTarget.style.transform = 'translateY(-50%) scale(1.1)';
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.background = 'rgba(15, 23, 42, 0.8)';
+              e.currentTarget.style.transform = 'translateY(-50%) scale(1)';
+            }}
+            title="Previous Image (Left Arrow)"
+          >
+            <ChevronLeft size={32} />
+          </button>
+        )}
+
+        {/* MAIN ENLARGED IMAGE */}
+        <div
+          style={{
+            maxWidth: '85vw',
+            maxHeight: '78vh',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            position: 'relative'
+          }}
+          onClick={(e) => e.stopPropagation()}
+        >
+          <img
+            src={allImages[selectedImageIndex]}
+            alt={`Document ${selectedImageIndex + 1}`}
+            style={{
+              maxWidth: '85vw',
+              maxHeight: '78vh',
+              objectFit: 'contain',
+              borderRadius: '12px',
+              boxShadow: '0 25px 60px rgba(0,0,0,0.85)',
+              border: '1px solid rgba(255, 255, 255, 0.1)'
+            }}
+          />
+        </div>
+
+        {/* RIGHT ARROW BUTTON */}
+        {allImages.length > 1 && (
+          <button
+            type="button"
+            onClick={(e) => {
+              e.stopPropagation();
+              setSelectedImageIndex((prev) => (prev < allImages.length - 1 ? prev + 1 : 0));
+            }}
+            style={{
+              position: 'absolute',
+              right: '2rem',
+              top: '50%',
+              transform: 'translateY(-50%)',
+              background: 'rgba(15, 23, 42, 0.8)',
+              border: '1px solid rgba(255, 255, 255, 0.2)',
+              color: '#fff',
+              width: '56px',
+              height: '56px',
+              borderRadius: '50%',
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              boxShadow: '0 8px 25px rgba(0, 0, 0, 0.5)',
+              transition: 'all 0.2s',
+              zIndex: 100010
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.background = 'var(--primary)';
+              e.currentTarget.style.transform = 'translateY(-50%) scale(1.1)';
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.background = 'rgba(15, 23, 42, 0.8)';
+              e.currentTarget.style.transform = 'translateY(-50%) scale(1)';
+            }}
+            title="Next Image (Right Arrow)"
+          >
+            <ChevronRight size={32} />
+          </button>
+        )}
+
+        {/* Bottom Thumbnails Strip */}
+        {allImages.length > 1 && (
+          <div
+            style={{
+              position: 'absolute',
+              bottom: '1.5rem',
+              display: 'flex',
+              gap: '0.75rem',
+              background: 'rgba(15, 23, 42, 0.8)',
+              padding: '0.5rem 1rem',
+              borderRadius: '30px',
+              border: '1px solid rgba(255, 255, 255, 0.1)',
+              zIndex: 100010,
+              maxWidth: '90vw',
+              overflowX: 'auto'
+            }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            {allImages.map((img, idx) => (
+              <img
+                key={idx}
+                src={img}
+                alt={`Thumb ${idx + 1}`}
+                onClick={() => setSelectedImageIndex(idx)}
+                style={{
+                  width: '44px',
+                  height: '44px',
+                  objectFit: 'cover',
+                  borderRadius: '8px',
+                  cursor: 'pointer',
+                  border: idx === selectedImageIndex ? '2px solid var(--accent-cyan)' : '2px solid transparent',
+                  opacity: idx === selectedImageIndex ? 1 : 0.6,
+                  transition: 'all 0.2s'
+                }}
+              />
+            ))}
+          </div>
+        )}
+      </div>
+    )}
+  </>
+);
 };
 
 export default EditBillModal;

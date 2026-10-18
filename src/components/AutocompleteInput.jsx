@@ -24,7 +24,7 @@ const AutocompleteInput = ({
         setLoading(true);
         try {
           const { data } = await axios.get(
-            `https://utility-bill-system-backend.vercel.app/api/bills/suggest?field=${field}&q=${encodeURIComponent(value.trim())}`
+            `http://localhost:5000/api/bills/suggest?field=${field}&q=${encodeURIComponent(value.trim())}`
           );
           setSuggestions(data);
           setIsOpen(data.length > 0);
@@ -59,7 +59,7 @@ const AutocompleteInput = ({
   };
 
   return (
-    <div ref={containerRef} style={{ position: 'relative', flex: 1 }}>
+    <div ref={containerRef} style={{ position: 'relative', flex: '1 1 200px', minWidth: 'min(200px, 100%)' }}>
       <label style={{
         display: 'block',
         fontSize: '0.85rem',

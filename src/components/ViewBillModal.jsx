@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { X, Printer, Edit, Trash2, Calendar, User, Phone, Tag, FileText, CheckCircle, ExternalLink, Image as ImageIcon, ChevronLeft, ChevronRight } from 'lucide-react';
+import { X, Printer, Edit, Trash2, Calendar, User, Phone, Tag, Hash, FileText, CheckCircle, ExternalLink, Image as ImageIcon, ChevronLeft, ChevronRight, Eye } from 'lucide-react';
 import PrintBillModal from './PrintBillModal';
+import { formatDatePK, getRecordNumber } from '../utils/billUtils';
 
 const ViewBillModal = ({ bill, onClose, onEdit, onDelete, showEdit = true, showDelete = true }) => {
   const [selectedImageIndex, setSelectedImageIndex] = useState(null);
@@ -11,14 +12,7 @@ const ViewBillModal = ({ bill, onClose, onEdit, onDelete, showEdit = true, showD
 
   const images = bill.images || [];
 
-  const formatDate = (dateStr) => {
-    if (!dateStr) return 'N/A';
-    return new Date(dateStr).toLocaleDateString('en-US', {
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric',
-    });
-  };
+  const formatDate = (dateStr) => formatDatePK(dateStr);
 
   const handleDelete = async () => {
     if (window.confirm(`Are you sure you want to delete bill "${bill.billName}" (${bill.billId})?`)) {
@@ -60,7 +54,7 @@ const ViewBillModal = ({ bill, onClose, onEdit, onDelete, showEdit = true, showD
         alignItems: 'flex-start',
         justifyContent: 'center',
         zIndex: 99999,
-        padding: '2rem 1rem',
+        padding: 'clamp(0.5rem, 2vw, 1.5rem) clamp(0.5rem, 2vw, 1rem)',
         overflowY: 'auto'
       }}>
         <div style={{
@@ -69,10 +63,10 @@ const ViewBillModal = ({ bill, onClose, onEdit, onDelete, showEdit = true, showD
           borderRadius: 'var(--radius-lg)',
           width: '100%',
           maxWidth: '750px',
-          maxHeight: 'calc(100vh - 4rem)',
+          maxHeight: 'calc(100vh - 2rem)',
           overflowY: 'auto',
           boxShadow: 'var(--glass-shadow)',
-          padding: '2.25rem',
+          padding: 'clamp(1rem, 3.5vw, 2.25rem)',
           position: 'relative',
           margin: 'auto 0'
         }}>
@@ -113,24 +107,39 @@ const ViewBillModal = ({ bill, onClose, onEdit, onDelete, showEdit = true, showD
             gap: '1rem'
           }}>
             <div>
+              {/* Record Number above Bill No */}
               <div style={{
                 display: 'inline-flex',
                 alignItems: 'center',
-                gap: '0.4rem',
-                background: 'rgba(6, 182, 212, 0.15)',
-                color: 'var(--accent-cyan)',
-                padding: '0.25rem 0.75rem',
-                borderRadius: '20px',
-                fontSize: '0.8rem',
+                gap: '0.35rem',
+                background: 'rgba(99, 102, 241, 0.15)',
+                color: 'var(--primary)',
+                border: '1px solid rgba(99, 102, 241, 0.3)',
+                padding: '0.2rem 0.65rem',
+                borderRadius: '6px',
+                fontSize: '0.78rem',
                 fontWeight: '700',
-                marginBottom: '0.5rem'
+                marginBottom: '0.4rem'
               }}>
-                <Tag size={13} />
-                BILL ID: {bill.billId}
+                Record No: {getRecordNumber(bill)}
               </div>
-              <h2 style={{ fontSize: '1.75rem', fontWeight: '800', color: 'var(--text-main)' }}>
-                {bill.billName}
-              </h2>
+              <div>
+                <div style={{
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '0.4rem',
+                  background: 'rgba(6, 182, 212, 0.15)',
+                  color: 'var(--accent-cyan)',
+                  padding: '0.25rem 0.75rem',
+                  borderRadius: '20px',
+                  fontSize: '0.8rem',
+                  fontWeight: '700',
+                  marginBottom: '0.5rem'
+                }}>
+                  <Tag size={13} />
+                  BILL NO: {bill.billId}
+                </div>
+              </div>
             </div>
 
             {/* Price Badge */}
@@ -157,7 +166,7 @@ const ViewBillModal = ({ bill, onClose, onEdit, onDelete, showEdit = true, showD
             gap: '1.25rem',
             marginBottom: '1.75rem'
           }}>
-            {/* Customer Details Box */}
+            {/* Bill & User Details Box */}
             <div style={{
               background: 'rgba(15, 23, 42, 0.6)',
               border: '1px solid var(--border-color)',
@@ -165,11 +174,16 @@ const ViewBillModal = ({ bill, onClose, onEdit, onDelete, showEdit = true, showD
               padding: '1.25rem'
             }}>
               <div style={{ fontSize: '0.75rem', fontWeight: '700', color: 'var(--accent-cyan)', textTransform: 'uppercase', marginBottom: '0.6rem', display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
-                <User size={14} />
-                Customer Info
+                <FileText size={14} />
+                Bill & User Details
               </div>
-              <div style={{ fontSize: '1.1rem', fontWeight: '700', color: 'var(--text-main)', marginBottom: '0.3rem' }}>
-                {bill.username}
+              <div style={{ display: 'flex', alignItems: 'baseline', gap: '0.5rem', marginBottom: '0.4rem', flexWrap: 'wrap' }}>
+                <span style={{ fontSize: '0.78rem', color: 'var(--text-muted)', textTransform: 'uppercase', fontWeight: '700', letterSpacing: '0.04em' }}>
+                  Bill Name:
+                </span>
+                <span style={{ fontSize: '1.15rem', fontWeight: '700', color: 'var(--text-main)' }}>
+                  {bill.billName}
+                </span>
               </div>
               <div style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>
                 User ID: <span style={{ color: 'var(--text-main)', fontWeight: '600' }}>{bill.userId}</span>
@@ -177,28 +191,6 @@ const ViewBillModal = ({ bill, onClose, onEdit, onDelete, showEdit = true, showD
               <div style={{ fontSize: '0.85rem', color: 'var(--accent-emerald)', marginTop: '0.2rem', display: 'flex', alignItems: 'center', gap: '0.3rem' }}>
                 <Phone size={13} />
                 {bill.phoneNumber}
-              </div>
-            </div>
-
-            {/* Dates & Timeline Box */}
-            <div style={{
-              background: 'rgba(15, 23, 42, 0.6)',
-              border: '1px solid var(--border-color)',
-              borderRadius: 'var(--radius-sm)',
-              padding: '1.25rem'
-            }}>
-              <div style={{ fontSize: '0.75rem', fontWeight: '700', color: 'var(--accent-purple)', textTransform: 'uppercase', marginBottom: '0.6rem', display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
-                <Calendar size={14} />
-                Bill Dates
-              </div>
-              <div style={{ fontSize: '0.85rem', color: 'var(--text-main)', marginBottom: '0.4rem' }}>
-                Entry Date: <strong>{formatDate(bill.billEntryDate)}</strong>
-              </div>
-              <div style={{ fontSize: '0.85rem', color: 'var(--accent-rose)', fontWeight: '600' }}>
-                Due Date: <strong>{formatDate(bill.billDueDate)}</strong>
-              </div>
-              <div style={{ fontSize: '0.75rem', color: 'var(--text-dim)', marginTop: '0.5rem' }}>
-                Logged on: {formatDate(bill.createdAt)}
               </div>
             </div>
           </div>
@@ -278,89 +270,186 @@ const ViewBillModal = ({ bill, onClose, onEdit, onDelete, showEdit = true, showD
             )}
           </div>
 
-          {/* Action Buttons Footer */}
+          {/* Action Buttons Footer - Centered & Vertically Stacked */}
           <div style={{
             display: 'flex',
-            justifyContent: (showDelete && onDelete) ? 'space-between' : 'flex-end',
+            flexDirection: 'column',
             alignItems: 'center',
+            justifyContent: 'center',
             borderTop: '1px solid var(--border-color)',
-            paddingTop: '1.25rem',
-            flexWrap: 'wrap',
-            gap: '1rem'
+            paddingTop: '1.5rem',
+            marginTop: '1.5rem',
+            width: '100%',
+            gap: '0.75rem'
           }}>
-            {showDelete && onDelete && (
-              <button
-                type="button"
-                onClick={handleDelete}
-                disabled={deleting}
-                style={{
-                  padding: '0.65rem 1.25rem',
-                  background: 'rgba(244, 63, 94, 0.15)',
-                  border: '1px solid rgba(244, 63, 94, 0.4)',
-                  borderRadius: 'var(--radius-sm)',
-                  color: 'var(--accent-rose)',
-                  fontWeight: '600',
-                  fontSize: '0.875rem',
-                  cursor: 'pointer',
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '0.4rem'
-                }}
-              >
-                <Trash2 size={16} />
-                Delete Record
-              </button>
+            {/* View Bill Button */}
+            <button
+              type="button"
+              onClick={() => {
+                if (images.length > 0) {
+                  setSelectedImageIndex(0);
+                } else {
+                  alert('No attached images for this bill. You can view printable bill details via Print Bill.');
+                }
+              }}
+              style={{
+                width: '100%',
+                maxWidth: '320px',
+                height: '46px',
+                padding: '0.75rem 1.5rem',
+                background: 'rgba(6, 182, 212, 0.15)',
+                border: '1px solid rgba(6, 182, 212, 0.4)',
+                borderRadius: 'var(--radius-sm)',
+                color: 'var(--accent-cyan)',
+                fontWeight: '700',
+                fontSize: '0.95rem',
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: '0.5rem',
+                transition: 'all 0.2s',
+                boxSizing: 'border-box'
+              }}
+              onMouseEnter={(e) => e.currentTarget.style.background = 'rgba(6, 182, 212, 0.25)'}
+              onMouseLeave={(e) => e.currentTarget.style.background = 'rgba(6, 182, 212, 0.15)'}
+            >
+              <Eye size={18} />
+              View Bill
+            </button>
+
+            {/* Print Bill Button */}
+            <button
+              type="button"
+              onClick={() => setShowPrintModal(true)}
+              style={{
+                width: '100%',
+                maxWidth: '320px',
+                height: '46px',
+                padding: '0.75rem 1.5rem',
+                background: 'linear-gradient(135deg, var(--primary), var(--accent-cyan))',
+                border: 'none',
+                borderRadius: 'var(--radius-sm)',
+                color: '#fff',
+                fontWeight: '700',
+                fontSize: '0.95rem',
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: '0.5rem',
+                boxShadow: '0 4px 15px rgba(99, 102, 241, 0.3)',
+                transition: 'all 0.2s',
+                boxSizing: 'border-box'
+              }}
+            >
+              <Printer size={18} />
+              Print Bill
+            </button>
+
+            {/* Cancel Button */}
+            <button
+              type="button"
+              onClick={onClose}
+              style={{
+                width: '100%',
+                maxWidth: '320px',
+                height: '46px',
+                padding: '0.75rem 1.5rem',
+                background: 'transparent',
+                border: '1px solid var(--border-color)',
+                borderRadius: 'var(--radius-sm)',
+                color: 'var(--text-muted)',
+                fontWeight: '600',
+                fontSize: '0.95rem',
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: '0.5rem',
+                transition: 'all 0.2s',
+                boxSizing: 'border-box'
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.background = 'rgba(255, 255, 255, 0.05)';
+                e.currentTarget.style.color = 'var(--text-main)';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.background = 'transparent';
+                e.currentTarget.style.color = 'var(--text-muted)';
+              }}
+            >
+              <X size={18} />
+              Cancel
+            </button>
+
+            {/* Edit & Delete Actions (preserved for existing functionality) */}
+            {((showEdit && onEdit) || (showDelete && onDelete)) && (
+              <div style={{
+                display: 'flex',
+                justifyContent: 'center',
+                gap: '0.75rem',
+                width: '100%',
+                maxWidth: '320px',
+                marginTop: '0.5rem',
+                paddingTop: '0.75rem',
+                borderTop: '1px dashed var(--border-color)'
+              }}>
+                {showEdit && onEdit && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      onClose();
+                      onEdit(bill);
+                    }}
+                    style={{
+                      flex: 1,
+                      padding: '0.5rem 0.75rem',
+                      background: 'rgba(99, 102, 241, 0.15)',
+                      border: '1px solid rgba(99, 102, 241, 0.3)',
+                      borderRadius: 'var(--radius-sm)',
+                      color: 'var(--text-main)',
+                      fontWeight: '600',
+                      fontSize: '0.8rem',
+                      cursor: 'pointer',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      gap: '0.35rem'
+                    }}
+                  >
+                    <Edit size={14} />
+                    Edit
+                  </button>
+                )}
+
+                {showDelete && onDelete && (
+                  <button
+                    type="button"
+                    onClick={handleDelete}
+                    disabled={deleting}
+                    style={{
+                      flex: 1,
+                      padding: '0.5rem 0.75rem',
+                      background: 'rgba(244, 63, 94, 0.15)',
+                      border: '1px solid rgba(244, 63, 94, 0.4)',
+                      borderRadius: 'var(--radius-sm)',
+                      color: 'var(--accent-rose)',
+                      fontWeight: '600',
+                      fontSize: '0.8rem',
+                      cursor: 'pointer',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      gap: '0.35rem'
+                    }}
+                  >
+                    <Trash2 size={14} />
+                    Delete
+                  </button>
+                )}
+              </div>
             )}
-
-            <div style={{ display: 'flex', gap: '0.75rem' }}>
-              {showEdit && onEdit && (
-                <button
-                  type="button"
-                  onClick={() => {
-                    onClose();
-                    onEdit(bill);
-                  }}
-                  style={{
-                    padding: '0.65rem 1.25rem',
-                    background: 'rgba(99, 102, 241, 0.2)',
-                    border: '1px solid var(--primary)',
-                    borderRadius: 'var(--radius-sm)',
-                    color: 'var(--text-main)',
-                    fontWeight: '600',
-                    fontSize: '0.875rem',
-                    cursor: 'pointer',
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '0.4rem'
-                  }}
-                >
-                  <Edit size={16} />
-                  Edit Record
-                </button>
-              )}
-
-              <button
-                type="button"
-                onClick={() => setShowPrintModal(true)}
-                style={{
-                  padding: '0.65rem 1.25rem',
-                  background: 'linear-gradient(135deg, var(--primary), var(--accent-cyan))',
-                  border: 'none',
-                  borderRadius: 'var(--radius-sm)',
-                  color: '#fff',
-                  fontWeight: '700',
-                  fontSize: '0.875rem',
-                  cursor: 'pointer',
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '0.4rem',
-                  boxShadow: '0 4px 15px rgba(99, 102, 241, 0.3)'
-                }}
-              >
-                <Printer size={16} />
-                Print Receipt
-              </button>
-            </div>
           </div>
 
         </div>
@@ -381,7 +470,7 @@ const ViewBillModal = ({ bill, onClose, onEdit, onDelete, showEdit = true, showD
             flexDirection: 'column',
             alignItems: 'center',
             justifyContent: 'center',
-            zIndex: 3000,
+            zIndex: 100005,
             padding: '1.5rem'
           }}
         >
@@ -395,7 +484,7 @@ const ViewBillModal = ({ bill, onClose, onEdit, onDelete, showEdit = true, showD
             justifyContent: 'space-between',
             alignItems: 'center',
             color: '#fff',
-            zIndex: 3100
+            zIndex: 100010
           }}>
             <div style={{ fontSize: '0.95rem', fontWeight: '700', background: 'rgba(255, 255, 255, 0.1)', padding: '0.4rem 1rem', borderRadius: '20px' }}>
               Document {selectedImageIndex + 1} of {images.length}

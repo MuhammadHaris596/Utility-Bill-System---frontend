@@ -36,7 +36,7 @@ const AddAdmin = () => {
     setLoading(true);
 
     try {
-      const { data } = await axios.post('https://utility-bill-system-backend.vercel.app/api/auth/register-admin', {
+      const { data } = await axios.post('http://localhost:5000/api/auth/register-admin', {
         name: formData.name,
         email: formData.email,
         password: formData.password,

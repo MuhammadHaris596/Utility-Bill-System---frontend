@@ -13,7 +13,7 @@ export const AuthProvider = ({ children }) => {
       if (storedToken) {
         axios.defaults.headers.common['Authorization'] = `Bearer ${storedToken}`;
         try {
-          const { data } = await axios.get('https://utility-bill-system-backend.vercel.app/api/auth/me');
+          const { data } = await axios.get('http://localhost:5000/api/auth/me');
           setAdmin(data);
         } catch (err) {
           console.error('Invalid token, logging out', err);
@@ -29,7 +29,7 @@ export const AuthProvider = ({ children }) => {
   }, []);
 
   const login = async (email, password) => {
-    const { data } = await axios.post('https://utility-bill-system-backend.vercel.app/api/auth/login', { email, password });
+    const { data } = await axios.post('http://localhost:5000/api/auth/login', { email, password });
     localStorage.setItem('adminToken', data.token);
     axios.defaults.headers.common['Authorization'] = `Bearer ${data.token}`;
     setAdmin(data);

@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { PlusCircle, FileText, Receipt, Shield, Sparkles } from 'lucide-react';
+import { PlusCircle, FileText, Shield, Sparkles } from 'lucide-react';
 import NewBillModal from '../components/NewBillModal';
 
 const Dashboard = () => {
@@ -14,24 +14,25 @@ const Dashboard = () => {
   return (
     <div style={{
       maxWidth: '1100px',
-      margin: '3rem auto',
-      padding: '0 1.5rem'
+      margin: 'clamp(1.5rem, 4vw, 3rem) auto',
+      padding: '0 clamp(0.75rem, 3vw, 1.5rem)',
+      width: '100%',
     }}>
       {/* Welcome Banner */}
       <div style={{
         background: 'linear-gradient(135deg, rgba(99, 102, 241, 0.15), rgba(6, 182, 212, 0.15))',
         border: '1px solid var(--border-color-active)',
         borderRadius: 'var(--radius-lg)',
-        padding: '2.5rem',
-        marginBottom: '3rem',
+        padding: 'clamp(1.25rem, 4vw, 2.5rem)',
+        marginBottom: 'clamp(1.5rem, 4vw, 3rem)',
         display: 'flex',
         justifyContent: 'space-between',
         alignItems: 'center',
         boxShadow: 'var(--glass-shadow)',
         flexWrap: 'wrap',
-        gap: '1.5rem'
+        gap: '1.25rem',
       }}>
-        <div>
+        <div style={{ flex: '1 1 300px' }}>
           <div style={{
             display: 'inline-flex',
             alignItems: 'center',
@@ -40,34 +41,35 @@ const Dashboard = () => {
             color: 'var(--accent-cyan)',
             padding: '0.3rem 0.8rem',
             borderRadius: '20px',
-            fontSize: '0.8rem',
+            fontSize: '0.78rem',
             fontWeight: '600',
-            marginBottom: '0.75rem'
+            marginBottom: '0.75rem',
           }}>
             <Sparkles size={14} />
             CLOTHING BRAND ADMIN PORTAL
           </div>
-          <h1 style={{ fontSize: '2.25rem', fontWeight: '800', color: 'var(--text-main)' }}>
+          <h1 style={{ fontSize: 'clamp(1.5rem, 4.5vw, 2.25rem)', fontWeight: '800', color: 'var(--text-main)', lineHeight: '1.2' }}>
             Utility Bill Control Center
           </h1>
-          <p style={{ color: 'var(--text-muted)', fontSize: '1rem', marginTop: '0.4rem', maxWidth: '600px' }}>
+          <p style={{ color: 'var(--text-muted)', fontSize: '0.925rem', marginTop: '0.4rem', maxWidth: '600px', lineHeight: '1.5' }}>
             Select an action below to enter new electricity, water, or gas bill details with autocompletion, or review and print existing bill records.
           </p>
         </div>
 
         <div style={{
           background: 'rgba(15, 23, 42, 0.6)',
-          padding: '1rem 1.5rem',
+          padding: '0.85rem 1.25rem',
           borderRadius: 'var(--radius-md)',
           border: '1px solid var(--border-color)',
           display: 'flex',
           alignItems: 'center',
-          gap: '0.75rem'
+          gap: '0.75rem',
+          alignSelf: 'flex-start',
         }}>
-          <Shield color="var(--accent-emerald)" size={28} />
+          <Shield color="var(--accent-emerald)" size={26} />
           <div>
-            <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', uppercase: true }}>Session Status</div>
-            <div style={{ fontSize: '0.95rem', fontWeight: '700', color: 'var(--accent-emerald)' }}>
+            <div style={{ fontSize: '0.72rem', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.04em' }}>Session Status</div>
+            <div style={{ fontSize: '0.9rem', fontWeight: '700', color: 'var(--accent-emerald)' }}>
               Admin Authenticated
             </div>
           </div>
@@ -75,14 +77,14 @@ const Dashboard = () => {
       </div>
 
       {/* Main Action Hub - TWO BIG BUTTONS */}
-      <h2 style={{ fontSize: '1.25rem', color: 'var(--text-muted)', marginBottom: '1.5rem', fontWeight: '600' }}>
+      <h2 style={{ fontSize: '1.2rem', color: 'var(--text-muted)', marginBottom: '1.25rem', fontWeight: '600' }}>
         Quick Actions
       </h2>
 
       <div style={{
         display: 'grid',
-        gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))',
-        gap: '2rem'
+        gridTemplateColumns: 'repeat(auto-fit, minmax(min(280px, 100%), 1fr))',
+        gap: '1.5rem',
       }}>
         {/* NEW BILL BUTTON */}
         <div
@@ -91,14 +93,14 @@ const Dashboard = () => {
             background: 'var(--bg-card)',
             border: '1px solid var(--border-color)',
             borderRadius: 'var(--radius-lg)',
-            padding: '2.5rem 2rem',
+            padding: 'clamp(1.5rem, 4vw, 2.5rem) clamp(1.25rem, 3vw, 2rem)',
             cursor: 'pointer',
             transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
             display: 'flex',
             flexDirection: 'column',
             alignItems: 'flex-start',
             position: 'relative',
-            overflow: 'hidden'
+            overflow: 'hidden',
           }}
           onMouseEnter={(e) => {
             e.currentTarget.style.transform = 'translateY(-6px)';
@@ -113,29 +115,29 @@ const Dashboard = () => {
         >
           <div style={{
             background: 'linear-gradient(135deg, #06b6d4, #3b82f6)',
-            padding: '1.25rem',
+            padding: '1.1rem',
             borderRadius: '16px',
-            marginBottom: '1.5rem',
-            boxShadow: '0 8px 20px rgba(6, 182, 212, 0.4)'
+            marginBottom: '1.25rem',
+            boxShadow: '0 8px 20px rgba(6, 182, 212, 0.4)',
           }}>
-            <PlusCircle size={36} color="#ffffff" />
+            <PlusCircle size={32} color="#ffffff" />
           </div>
 
-          <h3 style={{ fontSize: '1.5rem', fontWeight: '700', color: 'var(--text-main)', marginBottom: '0.5rem' }}>
+          <h3 style={{ fontSize: '1.4rem', fontWeight: '700', color: 'var(--text-main)', marginBottom: '0.4rem' }}>
             New Bill
           </h3>
-          <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem', lineHeight: '1.5' }}>
+          <p style={{ color: 'var(--text-muted)', fontSize: '0.875rem', lineHeight: '1.5' }}>
             Log a new utility bill into the database. Features autocomplete on User ID and Phone Number to auto-fill details.
           </p>
 
           <div style={{
-            marginTop: '2rem',
+            marginTop: '1.75rem',
             display: 'inline-flex',
             alignItems: 'center',
             gap: '0.5rem',
             color: 'var(--accent-cyan)',
             fontWeight: '700',
-            fontSize: '0.95rem'
+            fontSize: '0.925rem',
           }}>
             Open Entry Popup &rarr;
           </div>
@@ -148,14 +150,14 @@ const Dashboard = () => {
             background: 'var(--bg-card)',
             border: '1px solid var(--border-color)',
             borderRadius: 'var(--radius-lg)',
-            padding: '2.5rem 2rem',
+            padding: 'clamp(1.5rem, 4vw, 2.5rem) clamp(1.25rem, 3vw, 2rem)',
             cursor: 'pointer',
             transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
             display: 'flex',
             flexDirection: 'column',
             alignItems: 'flex-start',
             position: 'relative',
-            overflow: 'hidden'
+            overflow: 'hidden',
           }}
           onMouseEnter={(e) => {
             e.currentTarget.style.transform = 'translateY(-6px)';
@@ -170,29 +172,29 @@ const Dashboard = () => {
         >
           <div style={{
             background: 'linear-gradient(135deg, var(--primary), var(--accent-purple))',
-            padding: '1.25rem',
+            padding: '1.1rem',
             borderRadius: '16px',
-            marginBottom: '1.5rem',
-            boxShadow: '0 8px 20px rgba(99, 102, 241, 0.4)'
+            marginBottom: '1.25rem',
+            boxShadow: '0 8px 20px rgba(99, 102, 241, 0.4)',
           }}>
-            <FileText size={36} color="#ffffff" />
+            <FileText size={32} color="#ffffff" />
           </div>
 
-          <h3 style={{ fontSize: '1.5rem', fontWeight: '700', color: 'var(--text-main)', marginBottom: '0.5rem' }}>
+          <h3 style={{ fontSize: '1.4rem', fontWeight: '700', color: 'var(--text-main)', marginBottom: '0.4rem' }}>
             Old Bill
           </h3>
-          <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem', lineHeight: '1.5' }}>
+          <p style={{ color: 'var(--text-muted)', fontSize: '0.875rem', lineHeight: '1.5' }}>
             View, search, and manage all previously created bill records. Includes single-click browser print view for each bill.
           </p>
 
           <div style={{
-            marginTop: '2rem',
+            marginTop: '1.75rem',
             display: 'inline-flex',
             alignItems: 'center',
             gap: '0.5rem',
             color: 'var(--primary)',
             fontWeight: '700',
-            fontSize: '0.95rem'
+            fontSize: '0.925rem',
           }}>
             Browse All Bills &rarr;
           </div>

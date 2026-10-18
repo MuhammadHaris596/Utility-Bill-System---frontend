@@ -32,6 +32,11 @@
   --glass-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
 }
 
+html {
+  scroll-behavior: smooth;
+  -webkit-text-size-adjust: 100%;
+}
+
 * {
   box-sizing: border-box;
   margin: 0;
@@ -48,7 +53,29 @@ body {
   background-attachment: fixed;
   color: var(--text-main);
   min-height: 100vh;
+  overflow-x: hidden;
   -webkit-font-smoothing: antialiased;
+}
+
+/* Touch targets and smooth interaction */
+button, input, select, textarea, a {
+  touch-action: manipulation;
+}
+
+/* Smooth modal transitions without lag */
+.modal-fade-in {
+  animation: modalFadeIn 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes modalFadeIn {
+  from {
+    opacity: 0;
+    transform: scale(0.97);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
 }
 
 h1,
@@ -78,6 +105,83 @@ h6 {
 
 ::-webkit-scrollbar-thumb:hover {
   background: rgba(99, 102, 241, 0.6);
+}
+
+/* Responsive Navbar */
+.navbar-desktop-menu {
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+}
+
+.navbar-mobile-toggle {
+  display: none;
+  align-items: center;
+  justify-content: center;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid var(--border-color);
+  color: var(--text-main);
+  padding: 0.5rem;
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+.navbar-mobile-dropdown {
+  display: none;
+  flex-direction: column;
+  gap: 0.5rem;
+  padding: 1rem 1.25rem 1.25rem;
+  background: rgba(15, 23, 42, 0.98);
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  backdrop-filter: blur(16px);
+}
+
+.navbar-desktop-user {
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+  padding-left: 1rem;
+  border-left: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+@media (max-width: 820px) {
+  .navbar-desktop-menu {
+    display: none !important;
+  }
+
+  .navbar-desktop-user {
+    display: none !important;
+  }
+
+  .navbar-mobile-toggle {
+    display: flex !important;
+  }
+
+  .navbar-mobile-dropdown.open {
+    display: flex !important;
+  }
+
+  .mobile-brand-subtitle {
+    display: none !important;
+  }
+}
+
+/* Global Mobile Responsiveness Enhancements */
+@media (max-width: 640px) {
+  /* Prevent iOS zoom on input focus */
+  input, select, textarea {
+    font-size: 16px !important;
+  }
+
+  /* Ensure touch-friendly interactive targets */
+  button, a {
+    min-height: 38px;
+  }
+
+  /* Modals padding & viewport fitting */
+  .modal-fade-in {
+    max-width: calc(100vw - 20px) !important;
+  }
 }
 
 /* Print Specific CSS */

@@ -8,11 +8,7 @@ export default defineConfig({
     port: 3000,
     proxy: {
       '/api': {
-        target: 'https://utility-bill-system-backend.vercel.app/api',
-        changeOrigin: true,
-      },
-      '/uploads': {
-        target: 'https://utility-bill-system-backend.vercel.app/uploads',
+        target: 'http://localhost:5000',
         changeOrigin: true,
       },
     },
