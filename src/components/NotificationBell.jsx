@@ -36,7 +36,7 @@ const NotificationBell = () => {
       if (showLoading) setLoading(true);
       const token = localStorage.getItem('adminToken');
       const headers = token ? { Authorization: `Bearer ${token}` } : {};
-      const { data } = await axios.get('http://localhost:5000/api/bills/due-today', { headers });
+      const { data } = await axios.get('https://utility-bill-system-backend.vercel.app/api/bills/due-today', { headers });
       setDueBills(data || []);
     } catch (error) {
       console.error('Failed to fetch notifications:', error);
@@ -256,7 +256,7 @@ const NotificationBell = () => {
     try {
       const token = localStorage.getItem('adminToken');
       const headers = token ? { Authorization: `Bearer ${token}` } : {};
-      await axios.put(`http://localhost:5000/api/bills/${bill._id}/read`, {}, { headers });
+      await axios.put(`https://utility-bill-system-backend.vercel.app/api/bills/${bill._id}/read`, {}, { headers });
     } catch (err) {
       console.error('Failed to update read status on server:', err);
     }

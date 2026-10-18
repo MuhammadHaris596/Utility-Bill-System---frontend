@@ -101,7 +101,7 @@ const NewBillModal = ({ isOpen, onClose, onBillCreated }) => {
         headers['Authorization'] = `Bearer ${token}`;
       }
 
-      const response = await axios.post('http://localhost:5000/api/bills', data, {
+      const response = await axios.post('https://utility-bill-system-backend.vercel.app/api/bills', data, {
         headers,
       });
 

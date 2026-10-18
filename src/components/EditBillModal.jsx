@@ -130,7 +130,7 @@ const EditBillModal = ({ bill, isOpen, onClose, onBillUpdated }) => {
         headers['Authorization'] = `Bearer ${token}`;
       }
 
-      const response = await axios.put(`http://localhost:5000/api/bills/${bill._id}`, data, {
+      const response = await axios.put(`https://utility-bill-system-backend.vercel.app/api/bills/${bill._id}`, data, {
         headers,
       });
 

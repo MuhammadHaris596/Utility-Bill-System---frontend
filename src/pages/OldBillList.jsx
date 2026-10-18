@@ -44,7 +44,7 @@ const OldBillList = () => {
     setLoading(true);
     try {
       const { data } = await axios.get(
-        `http://localhost:5000/api/bills?search=${encodeURIComponent(searchTerm)}&page=${pageNum}&limit=${limitNum}`
+        `https://utility-bill-system-backend.vercel.app/api/bills?search=${encodeURIComponent(searchTerm)}&page=${pageNum}&limit=${limitNum}`
       );
 
       if (data && Array.isArray(data.bills)) {
@@ -85,7 +85,7 @@ const OldBillList = () => {
 
   const handleDeleteBill = async (id) => {
     try {
-      await axios.delete(`http://localhost:5000/api/bills/${id}`);
+      await axios.delete(`https://utility-bill-system-backend.vercel.app/api/bills/${id}`);
       fetchBills(search, page, limit);
     } catch (err) {
       alert(err.response?.data?.message || 'Failed to delete bill');

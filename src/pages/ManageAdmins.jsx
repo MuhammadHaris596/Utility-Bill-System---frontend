@@ -3,6 +3,8 @@ import axios from 'axios';
 import { UserPlus, User, Mail, Lock, CheckCircle, AlertCircle, Users, ShieldCheck, Calendar, RefreshCw } from 'lucide-react';
 import { AuthContext } from '../context/AuthContext';
 
+
+
 const ManageAdmins = () => {
   const { admin: currentAdmin } = useContext(AuthContext);
 
@@ -22,7 +24,7 @@ const ManageAdmins = () => {
   const fetchAdmins = async () => {
     try {
       setLoadingList(true);
-      const { data } = await axios.get('http://localhost:5000/api/auth/admins');
+      const { data } = await axios.get('https://utility-bill-system-backend.vercel.app/api/auth/admins');
       setAdminsList(data);
     } catch (err) {
       console.error('Failed to fetch admin list:', err);
@@ -57,7 +59,7 @@ const ManageAdmins = () => {
     setSubmitting(true);
 
     try {
-      const { data } = await axios.post('http://localhost:5000/api/auth/register-admin', {
+      const { data } = await axios.post('https://utility-bill-system-backend.vercel.app/api/auth/register-admin', {
         name: formData.name,
         email: formData.email,
         password: formData.password,
