@@ -31,13 +31,71 @@ const NotificationBell = () => {
   const buttonRef = useRef(null);
   const panelRef = useRef(null);
 
+  const THREE_DAYS_MS = 3 * 24 * 60 * 60 * 1000;
+
   const fetchDueBills = async (showLoading = false) => {
     try {
       if (showLoading) setLoading(true);
       const token = localStorage.getItem('adminToken');
       const headers = token ? { Authorization: `Bearer ${token}` } : {};
       const { data } = await axios.get('https://utility-bill-system-backend.vercel.app/api/bills/due-today', { headers });
-      setDueBills(data || []);
+
+      const rawBills = data || [];
+      const now = Date.now();
+
+      // Read persistent schedule tracker for reliable 3-day interval timing
+      let scheduleMap = {};
+      try {
+        const saved = localStorage.getItem('notification_schedule_tracker');
+        if (saved) scheduleMap = JSON.parse(saved);
+      } catch (e) {}
+
+      let trackerChanged = false;
+      const reNotifiedKeys = [];
+
+      const processedBills = rawBills.map((bill) => {
+        const stableKey = bill.billId ? String(bill.billId).trim() : String(bill._id);
+        const lastNotifiedTime =
+          bill.lastNotifiedAt
+            ? new Date(bill.lastNotifiedAt).getTime()
+            : scheduleMap[stableKey]?.lastNotifiedAt ||
+              (bill.createdAt ? new Date(bill.createdAt).getTime() : now);
+
+        if (!scheduleMap[stableKey]) {
+          scheduleMap[stableKey] = { lastNotifiedAt: lastNotifiedTime };
+          trackerChanged = true;
+        }
+
+        const elapsed = now - lastNotifiedTime;
+        if (elapsed >= THREE_DAYS_MS) {
+          // 3-day recurring interval elapsed -> trigger repeat notification occurrence
+          reNotifiedKeys.push(String(bill._id));
+          if (bill.billId) reNotifiedKeys.push(String(bill.billId).trim());
+          scheduleMap[stableKey] = { lastNotifiedAt: now };
+          trackerChanged = true;
+          return { ...bill, isRead: false, lastNotifiedAt: new Date(now).toISOString() };
+        }
+
+        return bill;
+      });
+
+      if (trackerChanged) {
+        try {
+          localStorage.setItem('notification_schedule_tracker', JSON.stringify(scheduleMap));
+        } catch (e) {}
+      }
+
+      if (reNotifiedKeys.length > 0) {
+        setReadBillIds((prev) => {
+          const next = prev.filter((id) => !reNotifiedKeys.includes(id));
+          try {
+            localStorage.setItem('read_due_bill_ids', JSON.stringify(next));
+          } catch (e) {}
+          return next;
+        });
+      }
+
+      setDueBills(processedBills);
     } catch (error) {
       console.error('Failed to fetch notifications:', error);
     } finally {
@@ -51,8 +109,15 @@ const NotificationBell = () => {
     const handleBillCreated = (event) => {
       const createdBill = event?.detail;
       if (createdBill && createdBill._id && (createdBill.notify === true || createdBill.notify === 'true')) {
+        const stableKey = createdBill.billId ? String(createdBill.billId).trim() : String(createdBill._id);
+        try {
+          const saved = localStorage.getItem('notification_schedule_tracker');
+          const scheduleMap = saved ? JSON.parse(saved) : {};
+          scheduleMap[stableKey] = { lastNotifiedAt: Date.now() };
+          localStorage.setItem('notification_schedule_tracker', JSON.stringify(scheduleMap));
+        } catch (e) {}
+
         setDueBills((prev) => {
-          const stableKey = createdBill.billId ? String(createdBill.billId).trim() : String(createdBill._id);
           const exists = prev.some(
             (b) => b._id === createdBill._id || (b.billId && String(b.billId).trim() === stableKey)
           );
@@ -72,6 +137,18 @@ const NotificationBell = () => {
       if (updatedBill && updatedBill._id) {
         const stableKey = updatedBill.billId ? String(updatedBill.billId).trim() : String(updatedBill._id);
         const notifyVal = updatedBill.notify === true || updatedBill.notify === 'true';
+
+        // Update schedule tracker: if turned OFF, remove immediately; if newly enabled, start fresh schedule
+        try {
+          const saved = localStorage.getItem('notification_schedule_tracker');
+          const scheduleMap = saved ? JSON.parse(saved) : {};
+          if (!notifyVal) {
+            delete scheduleMap[stableKey];
+          } else if (wasNewlyEnabled || !scheduleMap[stableKey]) {
+            scheduleMap[stableKey] = { lastNotifiedAt: Date.now() };
+          }
+          localStorage.setItem('notification_schedule_tracker', JSON.stringify(scheduleMap));
+        } catch (e) {}
 
         // If newly enabled, remove from readBillIds so it shows as unread immediately
         if (wasNewlyEnabled) {
