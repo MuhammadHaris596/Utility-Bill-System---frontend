@@ -52,7 +52,7 @@ const Dashboard = () => {
             Utility Bill Control Center
           </h1>
           <p style={{ color: 'var(--text-muted)', fontSize: '0.925rem', marginTop: '0.4rem', maxWidth: '600px', lineHeight: '1.5' }}>
-            Select an action below to enter new electricity, water, or gas bill details with autocompletion, or review and print existing bill records.
+           Redefine your style with clothing that blends comfort, quality, and modern fashion. We bring you stylish designs for every occasion, crafted to help you look confident and feel your best. From everyday essentials to statement pieces, discover fashion that reflects your personality.
           </p>
         </div>
 

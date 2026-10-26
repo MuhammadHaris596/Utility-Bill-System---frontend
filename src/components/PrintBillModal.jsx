@@ -121,7 +121,7 @@ const PrintBillModal = ({ bill, onClose }) => {
                 display: 'inline-block',
                 marginBottom: '0.35rem'
               }}>
-                Record No: #{getRecordNumber(bill)}
+                Record ID: #{getRecordNumber(bill)}
               </div>
               <br />
               <div style={{
@@ -135,9 +135,7 @@ const PrintBillModal = ({ bill, onClose }) => {
               }}>
                 Bill No: {bill.billId}
               </div>
-              <div style={{ fontSize: '0.8rem', color: '#64748b', marginTop: '0.4rem' }}>
-                Logged on: {formatDate(bill.createdAt)}
-              </div>
+              
             </div>
           </div>
 
@@ -157,11 +155,9 @@ const PrintBillModal = ({ bill, onClose }) => {
                 User & Contact Details
               </div>
               <div style={{ fontSize: '0.875rem', color: '#475569', marginBottom: '0.2rem' }}>
-                Bill Name: <strong style={{ color: '#0f172a' }}>{bill.billName}</strong>
+                Name: <strong style={{ color: '#0f172a' }}>{bill.billName}</strong>
               </div>
-              <div style={{ fontSize: '0.875rem', color: '#475569', marginBottom: '0.2rem' }}>
-                User ID: <strong>{bill.userId}</strong>
-              </div>
+              
               <div style={{ fontSize: '0.875rem', color: '#475569' }}>
                 Phone: <strong>{bill.phoneNumber}</strong>
               </div>
@@ -174,9 +170,7 @@ const PrintBillModal = ({ bill, onClose }) => {
               <div style={{ fontSize: '0.875rem', color: '#475569' }}>
                 Entry Date: <strong>{formatDate(bill.billEntryDate)}</strong>
               </div>
-              <div style={{ fontSize: '1rem', color: '#16a34a', fontWeight: '800', marginTop: '0.4rem' }}>
-                Amount: PKR {bill.amount ? Number(bill.amount).toLocaleString() : '0'}
-              </div>
+             
             </div>
           </div>
 
@@ -219,7 +213,8 @@ const PrintBillModal = ({ bill, onClose }) => {
               border: '1px solid #e2e8f0',
               borderLeft: '4px solid #4f46e5',
               fontSize: '0.875rem',
-              color: '#334155'
+              color: '#334155',
+              whiteSpace: 'pre-wrap'
             }}>
               <strong style={{ color: '#0f172a' }}>Comment / Note:</strong> {bill.comment}
             </div>

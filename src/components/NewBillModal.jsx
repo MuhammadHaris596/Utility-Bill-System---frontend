@@ -8,11 +8,9 @@ const NewBillModal = ({ isOpen, onClose, onBillCreated }) => {
   const [formData, setFormData] = useState({
     billId: '',
     billName: '',
-    userId: '',
     phoneNumber: '',
     // Set entry date to current date in Pakistan timezone (Asia/Karachi)
     billEntryDate: new Intl.DateTimeFormat('en-CA', { year: 'numeric', month: '2-digit', day: '2-digit', timeZone: 'Asia/Karachi' }).format(new Date()),
-    amount: '',
     comment: '',
   });
 
@@ -30,7 +28,6 @@ const NewBillModal = ({ isOpen, onClose, onBillCreated }) => {
       setFormData({
         billId: '',
         billName: '',
-        userId: '',
         phoneNumber: '',
         billEntryDate: new Intl.DateTimeFormat('en-CA', { year: 'numeric', month: '2-digit', day: '2-digit', timeZone: 'Asia/Karachi' }).format(new Date()),
         amount: '',
@@ -52,7 +49,6 @@ const NewBillModal = ({ isOpen, onClose, onBillCreated }) => {
   const handleSelectSuggestion = (suggestion) => {
     setFormData((prev) => ({
       ...prev,
-      userId: suggestion.userId || prev.userId,
       phoneNumber: suggestion.phoneNumber || prev.phoneNumber,
     }));
   };
@@ -82,13 +78,13 @@ const NewBillModal = ({ isOpen, onClose, onBillCreated }) => {
       const data = new FormData();
       data.append('billId', formData.billId);
       data.append('billName', formData.billName);
-      data.append('username', formData.userId || formData.billName || 'User');
-      data.append('userId', formData.userId);
+      data.append('username', formData.billName || 'User');
+      data.append('userId', formData.userId || (formData.phoneNumber ? `USR-${formData.phoneNumber.replace(/\D/g, '').slice(-6)}` : `USER-${Date.now().toString().slice(-6)}`));
       data.append('phoneNumber', formData.phoneNumber);
       data.append('billEntryDate', formData.billEntryDate);
       data.append('billDueDate', formData.billEntryDate);
-      data.append('amount', formData.amount);
-      data.append('comment', formData.comment);
+      data.append('amount', formData.amount || '0');
+      data.append('comment', formData.comment || '');
       data.append('notify', notify ? 'true' : 'false');
 
       files.forEach((file) => {
@@ -253,7 +249,7 @@ const NewBillModal = ({ isOpen, onClose, onBillCreated }) => {
 
             <div style={{ flex: 1, minWidth: 'min(200px, 100%)' }}>
               <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: '600', color: 'var(--text-muted)', marginBottom: '0.4rem' }}>
-                Bill Name <span style={{ color: 'var(--accent-rose)' }}>*</span>
+                Name <span style={{ color: 'var(--accent-rose)' }}>*</span>
               </label>
               <input
                 type="text"
@@ -277,15 +273,7 @@ const NewBillModal = ({ isOpen, onClose, onBillCreated }) => {
 
           {/* Row 2: User ID (Autocomplete) & Phone Number (Autocomplete) */}
           <div style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap' }}>
-            <AutocompleteInput
-              label="User ID"
-              name="userId"
-              value={formData.userId}
-              onChange={handleChange}
-              onSelectSuggestion={handleSelectSuggestion}
-              field="userId"
-              placeholder="Type User ID (e.g. USR-102)"
-            />
+
 
             <AutocompleteInput
               label="Phone Number"
@@ -301,30 +289,42 @@ const NewBillModal = ({ isOpen, onClose, onBillCreated }) => {
 
 
           <div style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap' }}>
-            <div style={{ flex: 1, minWidth: '200px' }}>
-              <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: '600', color: 'var(--text-muted)', marginBottom: '0.4rem' }}>
-                Bill Price / Amount (PKR) <span style={{ color: 'var(--accent-rose)' }}>*</span>
-              </label>
-              <input
-                type="number"
-                name="amount"
-                value={formData.amount}
-                onChange={handleChange}
-                placeholder="e.g. 15450"
-                required
-                min="0"
-                step="any"
-                style={{
-                  width: '100%',
-                  padding: '0.75rem 1rem',
-                  background: 'rgba(15, 23, 42, 0.6)',
-                  border: '1px solid var(--border-color)',
-                  borderRadius: 'var(--radius-sm)',
-                  color: 'var(--text-main)',
-                  outline: 'none'
-                }}
-              />
-            </div>
+
+          </div>
+
+          {/* Comment Section (moved up) */}
+          <div>
+            <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: '600', color: 'var(--text-muted)', marginBottom: '0.4rem' }}>
+              Comment / Notes
+            </label>
+            <textarea
+              name="comment"
+              value={formData.comment}
+              onChange={handleChange}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' && !e.shiftKey) {
+                  e.preventDefault();
+                  if (e.target.form) {
+                    e.target.form.requestSubmit();
+                  }
+                }
+              }}
+              placeholder="e.g. Paid via online bank transfer (Shift + Enter for new line)"
+              rows={3}
+              style={{
+                width: '100%',
+                padding: '0.75rem 1rem',
+                background: 'rgba(15, 23, 42, 0.6)',
+                border: '1px solid var(--border-color)',
+                borderRadius: 'var(--radius-sm)',
+                color: 'var(--text-main)',
+                outline: 'none',
+                resize: 'vertical',
+                fontFamily: 'inherit',
+                fontSize: '0.9rem',
+                lineHeight: '1.4'
+              }}
+            />
           </div>
 
           {/* Upload Images Section */}
@@ -398,29 +398,7 @@ const NewBillModal = ({ isOpen, onClose, onBillCreated }) => {
             )}
           </div>
 
-          {/* Bottom One-Line Comment Section */}
-          <div>
-            <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: '600', color: 'var(--text-muted)', marginBottom: '0.4rem' }}>
-              One-Line Comment / Notes (Bottom)
-            </label>
-            <input
-              type="text"
-              name="comment"
-              value={formData.comment}
-              onChange={handleChange}
-              placeholder="e.g. Paid via online bank transfer by Store Manager on 1st Sept"
-              maxLength={250}
-              style={{
-                width: '100%',
-                padding: '0.75rem 1rem',
-                background: 'rgba(15, 23, 42, 0.6)',
-                border: '1px solid var(--border-color)',
-                borderRadius: 'var(--radius-sm)',
-                color: 'var(--text-main)',
-                outline: 'none'
-              }}
-            />
-          </div>
+
 
           {/* Action Buttons - Centered and Vertically Stacked */}
           <div style={{

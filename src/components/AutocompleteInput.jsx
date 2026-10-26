@@ -143,10 +143,7 @@ const AutocompleteInput = ({
               <div>
                 <div style={{ fontWeight: '600', fontSize: '0.9rem', color: 'var(--text-main)', display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
                   <User size={14} color="var(--accent-cyan)" />
-                  {item.username}
-                </div>
-                <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>
-                  ID: <span style={{ color: 'var(--text-main)' }}>{item.userId}</span>
+                  {item.username || item.billName || 'Customer'}
                 </div>
               </div>
               <div style={{ fontSize: '0.8rem', color: 'var(--accent-emerald)', display: 'flex', alignItems: 'center', gap: '0.3rem' }}>

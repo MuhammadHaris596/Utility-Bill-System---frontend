@@ -108,7 +108,10 @@ const EditBillModal = ({ bill, isOpen, onClose, onBillUpdated }) => {
       data.append('billId', formData.billId);
       data.append('billName', formData.billName);
       data.append('username', formData.username);
-      data.append('userId', formData.userId);
+      // Preserve existing userId for updates; New bills will have it generated server‑side
+      if (formData.userId) {
+        data.append('userId', formData.userId);
+      }
       data.append('phoneNumber', formData.phoneNumber);
       data.append('billEntryDate', formData.billEntryDate);
       data.append('billDueDate', formData.billDueDate);
@@ -116,7 +119,7 @@ const EditBillModal = ({ bill, isOpen, onClose, onBillUpdated }) => {
       data.append('comment', formData.comment);
       data.append('notify', notify ? 'true' : 'false');
 
-      existingImages.forEach((img) => {
+      existingImages.forEach((img) => { 
         data.append('existingImages', img);
       });
 
@@ -287,7 +290,7 @@ const EditBillModal = ({ bill, isOpen, onClose, onBillUpdated }) => {
 
             <div style={{ flex: 1, minWidth: 'min(200px, 100%)' }}>
               <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: '600', color: 'var(--text-muted)', marginBottom: '0.4rem' }}>
-                Bill Name <span style={{ color: 'var(--accent-rose)' }}>*</span>
+                Name <span style={{ color: 'var(--accent-rose)' }}>*</span>
               </label>
               <input
                 type="text"
@@ -309,17 +312,8 @@ const EditBillModal = ({ bill, isOpen, onClose, onBillUpdated }) => {
           </div>
 
           {/* Row 2: User ID & Phone Number */}
+          {/* Row 2: Phone Number */}
           <div style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap' }}>
-            <AutocompleteInput
-              label="User ID"
-              name="userId"
-              value={formData.userId}
-              onChange={handleChange}
-              onSelectSuggestion={handleSelectSuggestion}
-              field="userId"
-              placeholder="Type User ID"
-            />
-
             <AutocompleteInput
               label="Phone Number"
               name="phoneNumber"
@@ -332,30 +326,8 @@ const EditBillModal = ({ bill, isOpen, onClose, onBillUpdated }) => {
           </div>
 
 
-          {/* Amount */}
-          <div>
-            <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: '600', color: 'var(--text-muted)', marginBottom: '0.4rem' }}>
-              Bill Price / Amount (PKR) <span style={{ color: 'var(--accent-rose)' }}>*</span>
-            </label>
-            <input
-              type="number"
-              name="amount"
-              value={formData.amount}
-              onChange={handleChange}
-              required
-              min="0"
-              step="any"
-              style={{
-                width: '100%',
-                padding: '0.75rem 1rem',
-                background: 'rgba(15, 23, 42, 0.6)',
-                border: '1px solid var(--border-color)',
-                borderRadius: 'var(--radius-sm)',
-                color: 'var(--text-main)',
-                outline: 'none'
-              }}
-            />
-          </div>
+          
+         
 
           {/* Manage Images */}
           <div>
@@ -521,15 +493,22 @@ const EditBillModal = ({ bill, isOpen, onClose, onBillUpdated }) => {
           {/* Bottom One-Line Comment Section */}
           <div>
             <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: '600', color: 'var(--text-muted)', marginBottom: '0.4rem' }}>
-              One-Line Comment / Notes (Bottom)
+              Comment / Notes (Bottom)
             </label>
-            <input
-              type="text"
+            <textarea
               name="comment"
               value={formData.comment}
               onChange={handleChange}
-              placeholder="e.g. Paid via online transfer"
-              maxLength={250}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' && !e.shiftKey) {
+                  e.preventDefault();
+                  if (e.target.form) {
+                    e.target.form.requestSubmit();
+                  }
+                }
+              }}
+              placeholder="e.g. Paid via online transfer (Shift + Enter for new line)"
+              rows={3}
               style={{
                 width: '100%',
                 padding: '0.75rem 1rem',
@@ -537,7 +516,11 @@ const EditBillModal = ({ bill, isOpen, onClose, onBillUpdated }) => {
                 border: '1px solid var(--border-color)',
                 borderRadius: 'var(--radius-sm)',
                 color: 'var(--text-main)',
-                outline: 'none'
+                outline: 'none',
+                resize: 'vertical',
+                fontFamily: 'inherit',
+                fontSize: '0.9rem',
+                lineHeight: '1.4'
               }}
             />
           </div>

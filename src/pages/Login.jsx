@@ -4,7 +4,7 @@ import { AuthContext } from '../context/AuthContext';
 import { Receipt, Lock, Mail, ArrowRight, ShieldCheck, AlertCircle } from 'lucide-react';
 
 const Login = () => {
-  const [email, setEmail] = useState('');
+  const [email, setEmail] = useState('admin@brand.com');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [submitting, setSubmitting] = useState(false);

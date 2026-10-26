@@ -148,7 +148,7 @@ const OldBillList = () => {
               type="text"
               value={search}
               onChange={handleSearchChange}
-              placeholder="Search Record No, Bill No, name, phone..."
+              placeholder="Search by Record ID or Phone Number..."
               style={{
                 width: '100%',
                 padding: '0.65rem 1rem 0.65rem 2.5rem',
@@ -207,17 +207,26 @@ const OldBillList = () => {
             <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', fontSize: '0.9rem' }}>
               <thead>
                 <tr style={{ background: 'rgba(15, 23, 42, 0.8)', borderBottom: '1px solid var(--border-color)' }}>
+                  <th style={{ padding: '1rem 1.25rem', color: 'var(--text-muted)', fontWeight: '600' }}>Record ID</th>
                   <th style={{ padding: '1rem 1.25rem', color: 'var(--text-muted)', fontWeight: '600' }}>Bill No</th>
-                  <th style={{ padding: '1rem 1.25rem', color: 'var(--text-muted)', fontWeight: '600' }}>Bill Price</th>
-                  <th style={{ padding: '1rem 1.25rem', color: 'var(--text-muted)', fontWeight: '600' }}>Bill Name & User ID</th>
+                  <th style={{ padding: '1rem 1.25rem', color: 'var(--text-muted)', fontWeight: '600' }}>Name</th>
                   <th style={{ padding: '1rem 1.25rem', color: 'var(--text-muted)', fontWeight: '600' }}>Contact Phone</th>
                   <th style={{ padding: '1rem 1.25rem', color: 'var(--text-muted)', fontWeight: '600' }}>Entry Date</th>
                   <th style={{ padding: '1rem 1.25rem', color: 'var(--text-muted)', fontWeight: '600' }}>Comment / Docs</th>
-                  <th style={{ padding: '1rem 1.25rem', color: 'var(--text-muted)', fontWeight: '600', textAlign: 'right' }}>Actions</th>
+                  <th style={{ padding: '1rem 1.25rem', color: 'var(--text-muted)', fontWeight: '600', textAlign: 'center' }}>Actions</th>
                 </tr>
               </thead>
               <tbody>
-                {bills.map((bill) => (
+                {bills
+                  .filter((bill) => {
+                    if (!search || !search.trim()) return true;
+                    const q = search.trim().toLowerCase();
+                    const recId = getRecordNumber(bill).toLowerCase();
+                    const rawRec = bill.recordNumber !== undefined && bill.recordNumber !== null ? String(bill.recordNumber) : '';
+                    const phone = (bill.phoneNumber || '').toLowerCase();
+                    return recId.includes(q) || rawRec === q || phone.includes(q);
+                  })
+                  .map((bill) => (
                   <tr
                     key={bill._id}
                     style={{
@@ -227,51 +236,40 @@ const OldBillList = () => {
                     onMouseEnter={(e) => e.currentTarget.style.background = 'rgba(99, 102, 241, 0.05)'}
                     onMouseLeave={(e) => e.currentTarget.style.background = 'transparent'}
                   >
-                    {/* Record Number & Bill No */}
+                    {/* Record ID */}
                     <td
-                      style={{ padding: '0.85rem 1.25rem', cursor: 'pointer' }}
+                      style={{ padding: '1rem 1.25rem', cursor: 'pointer' }}
                       onClick={() => setSelectedBillForView(bill)}
                       title="Click to view details"
                     >
-                      <div style={{
+                      <span style={{
                         display: 'inline-flex',
                         alignItems: 'center',
                         background: 'rgba(99, 102, 241, 0.15)',
                         color: 'var(--primary)',
                         border: '1px solid rgba(99, 102, 241, 0.3)',
-                        padding: '0.15rem 0.5rem',
-                        borderRadius: '4px',
-                        fontSize: '0.75rem',
+                        padding: '0.2rem 0.55rem',
+                        borderRadius: '6px',
+                        fontSize: '0.85rem',
                         fontWeight: '700',
-                        letterSpacing: '0.05em',
-                        marginBottom: '0.25rem'
+                        letterSpacing: '0.05em'
                       }}>
                         {getRecordNumber(bill)}
-                      </div>
-                      <div style={{ fontWeight: '700', color: 'var(--accent-cyan)' }}>
-                        {bill.billId}
-                      </div>
+                      </span>
+                    </td>
+
+                    {/* Bill No */}
+                    <td style={{ padding: '1rem 1.25rem', fontWeight: '700', color: 'var(--accent-cyan)', fontSize: '0.95rem' }}>
+                      {bill.billId}
                     </td>
 
                     {/* Bill Price */}
-                    <td
-                      style={{ padding: '1rem 1.25rem', cursor: 'pointer' }}
-                      onClick={() => setSelectedBillForView(bill)}
-                    >
-                      <div style={{ fontSize: '1.05rem', color: 'var(--accent-emerald)', fontWeight: '800' }}>
-                        PKR {bill.amount ? Number(bill.amount).toLocaleString() : '0'}
-                      </div>
-                    </td>
+                    
 
                     {/* Bill Name & User ID (in place of Customer) */}
                     <td style={{ padding: '1rem 1.25rem' }}>
-                      <div style={{ fontSize: '0.68rem', color: 'var(--text-dim)', textTransform: 'uppercase', fontWeight: '700', letterSpacing: '0.04em', marginBottom: '0.1rem' }}>
-                        Bill Name:
-                      </div>
+                      
                       <div style={{ fontWeight: '700', color: 'var(--text-main)', fontSize: '0.95rem' }}>{bill.billName}</div>
-                      <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginTop: '0.15rem' }}>
-                        User ID: <span style={{ color: 'var(--text-main)', fontWeight: '600' }}>{bill.userId}</span>
-                      </div>
                     </td>
 
                     {/* Phone */}
@@ -318,7 +316,7 @@ const OldBillList = () => {
                     </td>
 
                     {/* ACTION BUTTONS (VIEW, EDIT, PRINT) */}
-                    <td style={{ padding: '1rem 1.25rem', textAlign: 'right' }}>
+                    <td style={{ padding: '1rem 1.25rem', textAlign: 'center' }}>
                       <div style={{ display: 'inline-flex', gap: '0.5rem', alignItems: 'center' }}>
                         {/* VIEW BUTTON */}
                         <button

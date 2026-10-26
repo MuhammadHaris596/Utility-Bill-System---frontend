@@ -1,9 +1,7 @@
 import React, { useState, useEffect, useContext } from 'react';
 import axios from 'axios';
-import { UserPlus, User, Mail, Lock, CheckCircle, AlertCircle, Users, ShieldCheck, Calendar, RefreshCw } from 'lucide-react';
+import { UserPlus, User, Mail, Lock, CheckCircle, AlertCircle, Users, ShieldCheck, Calendar, RefreshCw, Key, X } from 'lucide-react';
 import { AuthContext } from '../context/AuthContext';
-
-
 
 const ManageAdmins = () => {
   const { admin: currentAdmin } = useContext(AuthContext);
@@ -20,6 +18,13 @@ const ManageAdmins = () => {
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
+
+  // Password edit state
+  const [editingAdmin, setEditingAdmin] = useState(null);
+  const [passwordData, setPasswordData] = useState({ newPassword: '', confirmPassword: '' });
+  const [passwordSubmitting, setPasswordSubmitting] = useState(false);
+  const [passwordError, setPasswordError] = useState('');
+  const [passwordSuccess, setPasswordSuccess] = useState('');
 
   const fetchAdmins = async () => {
     try {
@@ -72,6 +77,65 @@ const ManageAdmins = () => {
       setError(err.response?.data?.message || 'Failed to create admin');
     } finally {
       setSubmitting(false);
+    }
+  };
+
+  const handleOpenEditPassword = (admin) => {
+    setEditingAdmin(admin);
+    setPasswordData({ newPassword: '', confirmPassword: '' });
+    setPasswordError('');
+    setPasswordSuccess('');
+  };
+
+  const handlePasswordSubmit = async (e) => {
+    e.preventDefault();
+    setPasswordError('');
+    setPasswordSuccess('');
+
+    if (passwordData.newPassword !== passwordData.confirmPassword) {
+      setPasswordError('Passwords do not match');
+      return;
+    }
+
+    if (passwordData.newPassword.length < 6) {
+      setPasswordError('Password must be at least 6 characters long');
+      return;
+    }
+
+    setPasswordSubmitting(true);
+    const token = localStorage.getItem('adminToken');
+    const headers = token ? { Authorization: `Bearer ${token}` } : {};
+
+    try {
+      try {
+        await axios.put(`https://utility-bill-system-backend.vercel.app/api/auth/admins/${editingAdmin._id}/password`, {
+          password: passwordData.newPassword
+        }, { headers });
+      } catch (vercelErr) {
+        if (vercelErr.response?.status === 404 || !vercelErr.response) {
+          try {
+            await axios.put(`/api/auth/admins/${editingAdmin._id}/password`, {
+              password: passwordData.newPassword
+            }, { headers });
+          } catch (proxyErr) {
+            await axios.put(`http://localhost:5000/api/auth/admins/${editingAdmin._id}/password`, {
+              password: passwordData.newPassword
+            }, { headers });
+          }
+        } else {
+          throw vercelErr;
+        }
+      }
+
+      setPasswordSuccess(`Password updated successfully for ${editingAdmin.name}!`);
+      setTimeout(() => {
+        setEditingAdmin(null);
+        setPasswordSuccess('');
+      }, 1400);
+    } catch (err) {
+      setPasswordError(err.response?.data?.message || 'Failed to update password');
+    } finally {
+      setPasswordSubmitting(false);
     }
   };
 
@@ -445,13 +509,13 @@ const ManageAdmins = () => {
                       </div>
                     </div>
 
-                    {/* Right: Date & Admin Role Badge */}
+                    {/* Right: Date, Role Badge & Edit Password */}
                     <div style={{
                       display: 'flex',
                       flexDirection: 'column',
                       alignItems: 'flex-end',
                       justifyContent: 'center',
-                      gap: '0.35rem',
+                      gap: '0.4rem',
                       flexShrink: 0,
                       marginLeft: 'auto'
                     }}>
@@ -470,22 +534,47 @@ const ManageAdmins = () => {
                         <Calendar size={13} style={{ flexShrink: 0 }} />
                         <span>{adm.createdAt ? new Date(adm.createdAt).toLocaleDateString() : 'Active'}</span>
                       </div>
-                      <span style={{
-                        display: 'inline-flex',
-                        alignItems: 'center',
-                        color: 'var(--accent-emerald)',
-                        background: 'rgba(16, 185, 129, 0.12)',
-                        border: '1px solid rgba(16, 185, 129, 0.25)',
-                        padding: '0.15rem 0.55rem',
-                        borderRadius: '10px',
-                        fontWeight: '700',
-                        fontSize: '0.72rem',
-                        letterSpacing: '0.04em',
-                        textTransform: 'uppercase',
-                        whiteSpace: 'nowrap'
-                      }}>
-                        Admin
-                      </span>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', flexWrap: 'wrap', justifyContent: 'flex-end' }}>
+                        <span style={{
+                          display: 'inline-flex',
+                          alignItems: 'center',
+                          color: 'var(--accent-emerald)',
+                          background: 'rgba(16, 185, 129, 0.12)',
+                          border: '1px solid rgba(16, 185, 129, 0.25)',
+                          padding: '0.15rem 0.55rem',
+                          borderRadius: '10px',
+                          fontWeight: '700',
+                          fontSize: '0.72rem',
+                          letterSpacing: '0.04em',
+                          textTransform: 'uppercase',
+                          whiteSpace: 'nowrap'
+                        }}>
+                          Admin
+                        </span>
+                        <button
+                          type="button"
+                          onClick={() => handleOpenEditPassword(adm)}
+                          style={{
+                            display: 'inline-flex',
+                            alignItems: 'center',
+                            gap: '0.35rem',
+                            background: 'rgba(99, 102, 241, 0.15)',
+                            border: '1px solid rgba(99, 102, 241, 0.35)',
+                            color: 'var(--accent-cyan)',
+                            padding: '0.25rem 0.6rem',
+                            borderRadius: '6px',
+                            fontSize: '0.72rem',
+                            fontWeight: '600',
+                            cursor: 'pointer',
+                            transition: 'all 0.2s',
+                          }}
+                          onMouseEnter={(e) => e.currentTarget.style.background = 'rgba(99, 102, 241, 0.3)'}
+                          onMouseLeave={(e) => e.currentTarget.style.background = 'rgba(99, 102, 241, 0.15)'}
+                        >
+                          <Key size={12} />
+                          Edit Password
+                        </button>
+                      </div>
                     </div>
                   </div>
                 );
@@ -495,6 +584,209 @@ const ManageAdmins = () => {
         </div>
 
       </div>
+
+      {/* Edit Password Modal */}
+      {editingAdmin && (
+        <div style={{
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          background: 'rgba(9, 13, 22, 0.85)',
+          backdropFilter: 'blur(10px)',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          zIndex: 99999,
+          padding: '1rem'
+        }}>
+          <div style={{
+            background: 'var(--bg-card)',
+            border: '1px solid var(--border-color-active)',
+            borderRadius: 'var(--radius-lg)',
+            width: '100%',
+            maxWidth: '440px',
+            boxShadow: 'var(--glass-shadow)',
+            padding: '1.75rem',
+            position: 'relative'
+          }}>
+            <button
+              type="button"
+              onClick={() => setEditingAdmin(null)}
+              style={{
+                position: 'absolute',
+                top: '1.25rem',
+                right: '1.25rem',
+                background: 'rgba(255, 255, 255, 0.05)',
+                border: '1px solid var(--border-color)',
+                borderRadius: '50%',
+                width: '32px',
+                height: '32px',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                color: 'var(--text-muted)',
+                cursor: 'pointer'
+              }}
+            >
+              <X size={16} />
+            </button>
+
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '1.25rem' }}>
+              <div style={{
+                background: 'linear-gradient(135deg, var(--accent-cyan), var(--primary))',
+                padding: '0.6rem',
+                borderRadius: '12px',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center'
+              }}>
+                <Key size={20} color="#fff" />
+              </div>
+              <div>
+                <h3 style={{ fontSize: '1.15rem', fontWeight: '700', color: 'var(--text-main)', margin: 0 }}>
+                  Edit Admin Password
+                </h3>
+                <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>
+                  Updating password for <strong style={{ color: 'var(--text-main)' }}>{editingAdmin.name}</strong>
+                </span>
+              </div>
+            </div>
+
+            {passwordError && (
+              <div style={{
+                background: 'rgba(244, 63, 94, 0.15)',
+                border: '1px solid rgba(244, 63, 94, 0.4)',
+                color: 'var(--accent-rose)',
+                padding: '0.65rem 0.85rem',
+                borderRadius: 'var(--radius-sm)',
+                fontSize: '0.85rem',
+                marginBottom: '1rem',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '0.5rem'
+              }}>
+                <AlertCircle size={16} />
+                {passwordError}
+              </div>
+            )}
+
+            {passwordSuccess && (
+              <div style={{
+                background: 'rgba(16, 185, 129, 0.15)',
+                border: '1px solid rgba(16, 185, 129, 0.4)',
+                color: 'var(--accent-emerald)',
+                padding: '0.65rem 0.85rem',
+                borderRadius: 'var(--radius-sm)',
+                fontSize: '0.85rem',
+                marginBottom: '1rem',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '0.5rem'
+              }}>
+                <CheckCircle size={16} />
+                {passwordSuccess}
+              </div>
+            )}
+
+            <form onSubmit={handlePasswordSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+              <div>
+                <label style={{ display: 'block', fontSize: '0.825rem', fontWeight: '600', color: 'var(--text-muted)', marginBottom: '0.35rem' }}>
+                  New Password <span style={{ color: 'var(--accent-rose)' }}>*</span>
+                </label>
+                <div style={{ position: 'relative' }}>
+                  <Lock size={16} color="var(--text-dim)" style={{ position: 'absolute', left: '0.9rem', top: '50%', transform: 'translateY(-50%)' }} />
+                  <input
+                    type="password"
+                    name="newPassword"
+                    value={passwordData.newPassword}
+                    onChange={(e) => setPasswordData({ ...passwordData, newPassword: e.target.value })}
+                    placeholder="Min. 6 characters"
+                    required
+                    style={{
+                      width: '100%',
+                      padding: '0.7rem 1rem 0.7rem 2.5rem',
+                      background: 'rgba(15, 23, 42, 0.6)',
+                      border: '1px solid var(--border-color)',
+                      borderRadius: 'var(--radius-sm)',
+                      color: 'var(--text-main)',
+                      outline: 'none',
+                      fontSize: '0.9rem'
+                    }}
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label style={{ display: 'block', fontSize: '0.825rem', fontWeight: '600', color: 'var(--text-muted)', marginBottom: '0.35rem' }}>
+                  Confirm New Password <span style={{ color: 'var(--accent-rose)' }}>*</span>
+                </label>
+                <div style={{ position: 'relative' }}>
+                  <Lock size={16} color="var(--text-dim)" style={{ position: 'absolute', left: '0.9rem', top: '50%', transform: 'translateY(-50%)' }} />
+                  <input
+                    type="password"
+                    name="confirmPassword"
+                    value={passwordData.confirmPassword}
+                    onChange={(e) => setPasswordData({ ...passwordData, confirmPassword: e.target.value })}
+                    placeholder="Confirm new password"
+                    required
+                    style={{
+                      width: '100%',
+                      padding: '0.7rem 1rem 0.7rem 2.5rem',
+                      background: 'rgba(15, 23, 42, 0.6)',
+                      border: '1px solid var(--border-color)',
+                      borderRadius: 'var(--radius-sm)',
+                      color: 'var(--text-main)',
+                      outline: 'none',
+                      fontSize: '0.9rem'
+                    }}
+                  />
+                </div>
+              </div>
+
+              <div style={{ display: 'flex', gap: '0.75rem', marginTop: '0.5rem' }}>
+                <button
+                  type="button"
+                  onClick={() => setEditingAdmin(null)}
+                  style={{
+                    flex: 1,
+                    padding: '0.75rem',
+                    background: 'rgba(255, 255, 255, 0.05)',
+                    border: '1px solid var(--border-color)',
+                    borderRadius: 'var(--radius-sm)',
+                    color: 'var(--text-muted)',
+                    fontWeight: '600',
+                    fontSize: '0.9rem',
+                    cursor: 'pointer'
+                  }}
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={passwordSubmitting}
+                  style={{
+                    flex: 1.5,
+                    padding: '0.75rem',
+                    background: 'linear-gradient(135deg, var(--accent-cyan), var(--primary))',
+                    border: 'none',
+                    borderRadius: 'var(--radius-sm)',
+                    color: '#fff',
+                    fontWeight: '700',
+                    fontSize: '0.9rem',
+                    cursor: passwordSubmitting ? 'not-allowed' : 'pointer',
+                    opacity: passwordSubmitting ? 0.7 : 1,
+                    boxShadow: '0 4px 12px rgba(6, 182, 212, 0.35)'
+                  }}
+                >
+                  {passwordSubmitting ? 'Updating...' : 'Update Password'}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

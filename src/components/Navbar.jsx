@@ -2,7 +2,7 @@ import React, { useState, useContext } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { AuthContext } from '../context/AuthContext';
 import NotificationBell from './NotificationBell';
-import NewBillModal from './NewBillModal';
+
 import { Receipt, LogOut, ShieldCheck, Home, FileText, Menu, X, PlusCircle } from 'lucide-react';
 
 const Navbar = () => {
@@ -69,15 +69,22 @@ const Navbar = () => {
           }}>
             <Receipt size={20} color="#fff" />
           </div>
-          <div style={{ minWidth: 0 }}>
-            <div style={{ fontWeight: '800', fontSize: '1.15rem', lineHeight: '1.1', whiteSpace: 'nowrap' }}>
-              LUXE <span style={{ color: 'var(--accent-cyan)' }}>BILLS</span>
+          <div style={{ minWidth: 0, display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
+            <div style={{ fontWeight: '800', fontSize: 'clamp(1.15rem, 3.5vw, 1.55rem)', lineHeight: '1.15', whiteSpace: 'nowrap' }}>
+              Fashion <span style={{ color: 'var(--accent-cyan)' }}>Zone</span>
             </div>
             <div
               className="mobile-brand-subtitle"
-              style={{ fontSize: '0.65rem', color: 'var(--text-muted)', letterSpacing: '0.05em' }}
+              style={{
+                fontSize: '0.72rem',
+                color: 'var(--text-muted)',
+                letterSpacing: '0.05em',
+                lineHeight: '1.2',
+                marginTop: '1px',
+                whiteSpace: 'nowrap'
+              }}
             >
-              UTILITY MANAGEMENT SYSTEM
+              Customer Data
             </div>
           </div>
         </Link>
@@ -112,36 +119,7 @@ const Navbar = () => {
                 </Link>
               );
             })}
-            {/* New Bill Desktop Button */}
-            <button
-              type="button"
-              onClick={() => setIsNewBillOpen(true)}
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: '0.45rem',
-                color: 'var(--text-main)',
-                background: 'rgba(99, 102, 241, 0.15)',
-                border: '1px solid rgba(99, 102, 241, 0.4)',
-                fontSize: '0.9rem',
-                fontWeight: '700',
-                padding: '0.35rem 0.75rem',
-                borderRadius: '6px',
-                cursor: 'pointer',
-                transition: 'all 0.2s',
-              }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.background = 'rgba(99, 102, 241, 0.28)';
-                e.currentTarget.style.borderColor = 'var(--primary)';
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.background = 'rgba(99, 102, 241, 0.15)';
-                e.currentTarget.style.borderColor = 'rgba(99, 102, 241, 0.4)';
-              }}
-            >
-              <PlusCircle size={17} color="var(--accent-cyan)" />
-              New Bill
-            </button>
+
           </div>
 
           {/* Exactly ONE Notification Bell */}
@@ -187,32 +165,7 @@ const Navbar = () => {
 
       {/* Mobile Drawer Dropdown */}
       <div className={`navbar-mobile-dropdown ${mobileOpen ? 'open' : ''}`}>
-        {/* New Bill Mobile Button */}
-        <button
-          type="button"
-          onClick={() => {
-            setMobileOpen(false);
-            setIsNewBillOpen(true);
-          }}
-          style={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: '0.75rem',
-            color: 'var(--text-main)',
-            background: 'rgba(99, 102, 241, 0.18)',
-            border: '1px solid rgba(99, 102, 241, 0.45)',
-            fontSize: '0.925rem',
-            fontWeight: '700',
-            padding: '0.75rem 1rem',
-            borderRadius: '8px',
-            cursor: 'pointer',
-            textAlign: 'left',
-            width: '100%',
-          }}
-        >
-          <PlusCircle size={18} color="var(--accent-cyan)" />
-          New Bill
-        </button>
+
 
         {navLinks.map((item) => {
           const Icon = item.icon;
@@ -276,12 +229,7 @@ const Navbar = () => {
         </div>
       </div>
 
-      {/* New Bill Modal Triggered from Navbar */}
-      <NewBillModal
-        isOpen={isNewBillOpen}
-        onClose={() => setIsNewBillOpen(false)}
-        onBillCreated={() => setIsNewBillOpen(false)}
-      />
+
     </nav>
   );
 };

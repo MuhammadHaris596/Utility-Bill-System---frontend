@@ -121,7 +121,7 @@ const ViewBillModal = ({ bill, onClose, onEdit, onDelete, showEdit = true, showD
                 fontWeight: '700',
                 marginBottom: '0.4rem'
               }}>
-                Record No: {getRecordNumber(bill)}
+                Record ID: {getRecordNumber(bill)}
               </div>
               <div>
                 <div style={{
@@ -142,21 +142,8 @@ const ViewBillModal = ({ bill, onClose, onEdit, onDelete, showEdit = true, showD
               </div>
             </div>
 
-            {/* Price Badge */}
-            <div style={{
-              background: 'linear-gradient(135deg, rgba(16, 185, 129, 0.2), rgba(6, 182, 212, 0.2))',
-              border: '1px solid rgba(16, 185, 129, 0.4)',
-              borderRadius: 'var(--radius-md)',
-              padding: '0.6rem 1.25rem',
-              textAlign: 'right'
-            }}>
-              <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', textTransform: 'uppercase', fontWeight: '600' }}>
-                Bill Price
-              </div>
-              <div style={{ fontSize: '1.4rem', fontWeight: '800', color: 'var(--accent-emerald)' }}>
-                PKR {bill.amount ? Number(bill.amount).toLocaleString() : '0'}
-              </div>
-            </div>
+            
+           
           </div>
 
           {/* Detail Cards Grid */}
@@ -179,15 +166,13 @@ const ViewBillModal = ({ bill, onClose, onEdit, onDelete, showEdit = true, showD
               </div>
               <div style={{ display: 'flex', alignItems: 'baseline', gap: '0.5rem', marginBottom: '0.4rem', flexWrap: 'wrap' }}>
                 <span style={{ fontSize: '0.78rem', color: 'var(--text-muted)', textTransform: 'uppercase', fontWeight: '700', letterSpacing: '0.04em' }}>
-                  Bill Name:
+                  Name:
                 </span>
                 <span style={{ fontSize: '1.15rem', fontWeight: '700', color: 'var(--text-main)' }}>
                   {bill.billName}
                 </span>
               </div>
-              <div style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>
-                User ID: <span style={{ color: 'var(--text-main)', fontWeight: '600' }}>{bill.userId}</span>
-              </div>
+             
               <div style={{ fontSize: '0.85rem', color: 'var(--accent-emerald)', marginTop: '0.2rem', display: 'flex', alignItems: 'center', gap: '0.3rem' }}>
                 <Phone size={13} />
                 {bill.phoneNumber}
@@ -207,7 +192,7 @@ const ViewBillModal = ({ bill, onClose, onEdit, onDelete, showEdit = true, showD
               <div style={{ fontSize: '0.75rem', fontWeight: '700', color: 'var(--primary)', textTransform: 'uppercase', marginBottom: '0.3rem' }}>
                 💬 One-Line Comment / Remarks
               </div>
-              <div style={{ fontSize: '0.95rem', color: 'var(--text-main)', fontStyle: 'italic', lineHeight: '1.4' }}>
+              <div style={{ fontSize: '0.95rem', color: 'var(--text-main)', fontStyle: 'italic', lineHeight: '1.4', whiteSpace: 'pre-wrap' }}>
                 "{bill.comment}"
               </div>
             </div>

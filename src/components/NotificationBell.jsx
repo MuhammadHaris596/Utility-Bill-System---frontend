@@ -697,7 +697,7 @@ const NotificationBell = () => {
                                   whiteSpace: 'nowrap',
                                 }}
                               >
-                                Bill Name :
+                                Name :
                               </span>
                               <span
                                 style={{
@@ -722,14 +722,15 @@ const NotificationBell = () => {
                                   color: 'var(--accent-emerald)',
                                   display: 'inline-flex',
                                   alignItems: 'center',
-                                  gap: '2px',
+                                  gap: '0.25rem',
                                   fontSize: '0.68rem',
                                   fontWeight: '600',
                                   background: 'rgba(16, 185, 129, 0.12)',
                                   border: '1px solid rgba(16, 185, 129, 0.25)',
-                                  padding: '0.08rem 0.38rem',
+                                  padding: '0.1rem 0.45rem',
                                   borderRadius: '4px',
                                   flexShrink: 0,
+                                  marginLeft: 'auto'
                                 }}
                               >
                                 <CheckCircle2 size={11} /> Checked
@@ -748,19 +749,8 @@ const NotificationBell = () => {
                               color: 'var(--text-muted)',
                             }}
                           >
-                            {/* User ID */}
-                            <div
-                              style={{
-                                display: 'inline-flex',
-                                alignItems: 'center',
-                                gap: '0.25rem',
-                              }}
-                            >
-                              <span style={{ color: 'var(--accent-cyan)', fontWeight: '600' }}>User ID :</span>
-                              <span style={{ color: 'var(--text-main)', fontWeight: '600', whiteSpace: 'nowrap' }}>
-                                {bill.userId || 'N/A'}
-                              </span>
-                            </div>
+                          
+                           
 
                             {/* Phone Number */}
                             <div
@@ -777,32 +767,7 @@ const NotificationBell = () => {
                           </div>
                         </div>
 
-                        {/* 3. Right Area: Amount Badge + Chevron */}
-                        <div
-                          style={{
-                            display: 'flex',
-                            alignItems: 'center',
-                            gap: '0.45rem',
-                            flexShrink: 0,
-                            alignSelf: 'center',
-                          }}
-                        >
-                          <div
-                            style={{
-                              color: 'var(--accent-emerald)',
-                              fontWeight: '700',
-                              fontSize: '0.85rem',
-                              whiteSpace: 'nowrap',
-                              background: 'rgba(16, 185, 129, 0.12)',
-                              border: '1px solid rgba(16, 185, 129, 0.25)',
-                              padding: '0.22rem 0.55rem',
-                              borderRadius: '6px',
-                            }}
-                          >
-                            PKR {Number(bill.amount || 0).toLocaleString()}
-                          </div>
-                          <ChevronRight size={16} color="var(--text-dim)" />
-                        </div>
+                       
                       </div>
                     );
                   })
