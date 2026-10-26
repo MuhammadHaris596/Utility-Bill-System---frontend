@@ -222,9 +222,8 @@ const OldBillList = () => {
                     if (!search || !search.trim()) return true;
                     const q = search.trim().toLowerCase();
                     const recId = getRecordNumber(bill).toLowerCase();
-                    const rawRec = bill.recordNumber !== undefined && bill.recordNumber !== null ? String(bill.recordNumber) : '';
                     const phone = (bill.phoneNumber || '').toLowerCase();
-                    return recId.includes(q) || rawRec === q || phone.includes(q);
+                    return recId.includes(q) || phone.includes(q);
                   })
                   .map((bill) => (
                   <tr
