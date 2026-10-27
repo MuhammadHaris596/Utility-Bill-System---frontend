@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
+import Swal from 'sweetalert2';
 import {
   Search,
   Printer,
@@ -88,7 +89,7 @@ const OldBillList = () => {
       await axios.delete(`https://utility-bill-system-backend.vercel.app/api/bills/${id}`);
       fetchBills(search, page, limit);
     } catch (err) {
-      alert(err.response?.data?.message || 'Failed to delete bill');
+      Swal.fire({ icon: 'error', title: 'Error', text: err.response?.data?.message || 'Failed to delete bill' });
     }
   };
 
@@ -226,205 +227,205 @@ const OldBillList = () => {
                     return recId.includes(q) || phone.includes(q);
                   })
                   .map((bill) => (
-                  <tr
-                    key={bill._id}
-                    style={{
-                      borderBottom: '1px solid rgba(255, 255, 255, 0.05)',
-                      transition: 'background 0.15s'
-                    }}
-                    onMouseEnter={(e) => e.currentTarget.style.background = 'rgba(99, 102, 241, 0.05)'}
-                    onMouseLeave={(e) => e.currentTarget.style.background = 'transparent'}
-                  >
-                    {/* Record ID */}
-                    <td
-                      style={{ padding: '1rem 1.25rem', cursor: 'pointer' }}
-                      onClick={() => setSelectedBillForView(bill)}
-                      title="Click to view details"
+                    <tr
+                      key={bill._id}
+                      style={{
+                        borderBottom: '1px solid rgba(255, 255, 255, 0.05)',
+                        transition: 'background 0.15s'
+                      }}
+                      onMouseEnter={(e) => e.currentTarget.style.background = 'rgba(99, 102, 241, 0.05)'}
+                      onMouseLeave={(e) => e.currentTarget.style.background = 'transparent'}
                     >
-                      <span style={{
-                        display: 'inline-flex',
-                        alignItems: 'center',
-                        background: 'rgba(99, 102, 241, 0.15)',
-                        color: 'var(--primary)',
-                        border: '1px solid rgba(99, 102, 241, 0.3)',
-                        padding: '0.2rem 0.55rem',
-                        borderRadius: '6px',
-                        fontSize: '0.85rem',
-                        fontWeight: '700',
-                        letterSpacing: '0.05em'
-                      }}>
-                        {getRecordNumber(bill)}
-                      </span>
-                    </td>
-
-                    {/* Bill No */}
-                    <td style={{ padding: '1rem 1.25rem', fontWeight: '700', color: 'var(--accent-cyan)', fontSize: '0.95rem' }}>
-                      {bill.billId}
-                    </td>
-
-                    {/* Bill Price */}
-                    
-
-                    {/* Bill Name & User ID (in place of Customer) */}
-                    <td style={{ padding: '1rem 1.25rem' }}>
-                      
-                      <div style={{ fontWeight: '700', color: 'var(--text-main)', fontSize: '0.95rem' }}>{bill.billName}</div>
-                    </td>
-
-                    {/* Phone */}
-                    <td style={{ padding: '1rem 1.25rem', color: 'var(--accent-emerald)', fontWeight: '500' }}>
-                      {bill.phoneNumber}
-                    </td>
-
-                    {/* Entry Date */}
-                    <td style={{ padding: '1rem 1.25rem' }}>
-                      <div style={{ fontSize: '0.85rem', color: 'var(--text-main)', fontWeight: '600' }}>
-                        {formatDate(bill.billEntryDate)}
-                      </div>
-                    </td>
-
-                    {/* Comment & Docs */}
-                    <td style={{ padding: '1rem 1.25rem' }}>
-                      {bill.comment && (
-                        <div style={{ fontSize: '0.78rem', color: 'var(--text-muted)', marginBottom: '0.3rem', fontStyle: 'italic', maxWidth: '180px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }} title={bill.comment}>
-                          💬 {bill.comment}
-                        </div>
-                      )}
-                      {bill.images && bill.images.length > 0 ? (
-                        <span
-                          onClick={() => setSelectedBillForView(bill)}
-                          style={{
-                            display: 'inline-flex',
-                            alignItems: 'center',
-                            gap: '0.3rem',
-                            background: 'rgba(6, 182, 212, 0.15)',
-                            color: 'var(--accent-cyan)',
-                            padding: '0.25rem 0.6rem',
-                            borderRadius: '6px',
-                            fontSize: '0.75rem',
-                            fontWeight: '600',
-                            cursor: 'pointer'
-                          }}
-                        >
-                          <ImageIcon size={14} />
-                          {bill.images.length} File(s)
+                      {/* Record ID */}
+                      <td
+                        style={{ padding: '1rem 1.25rem', cursor: 'pointer' }}
+                        onClick={() => setSelectedBillForView(bill)}
+                        title="Click to view details"
+                      >
+                        <span style={{
+                          display: 'inline-flex',
+                          alignItems: 'center',
+                          background: 'rgba(99, 102, 241, 0.15)',
+                          color: 'var(--primary)',
+                          border: '1px solid rgba(99, 102, 241, 0.3)',
+                          padding: '0.2rem 0.55rem',
+                          borderRadius: '6px',
+                          fontSize: '0.85rem',
+                          fontWeight: '700',
+                          letterSpacing: '0.05em'
+                        }}>
+                          {getRecordNumber(bill)}
                         </span>
-                      ) : (
-                        <span style={{ color: 'var(--text-dim)', fontSize: '0.8rem' }}>No Docs</span>
-                      )}
-                    </td>
+                      </td>
 
-                    {/* ACTION BUTTONS (VIEW, EDIT, PRINT) */}
-                    <td style={{ padding: '1rem 1.25rem', textAlign: 'center' }}>
-                      <div style={{ display: 'inline-flex', gap: '0.5rem', alignItems: 'center' }}>
-                        {/* VIEW BUTTON */}
-                        <button
-                          onClick={() => setSelectedBillForView(bill)}
-                          title="View Details"
-                          style={{
-                            background: 'rgba(6, 182, 212, 0.15)',
-                            border: '1px solid rgba(6, 182, 212, 0.4)',
-                            color: 'var(--accent-cyan)',
-                            padding: '0.45rem 0.75rem',
-                            borderRadius: '8px',
-                            fontWeight: '600',
-                            fontSize: '0.8rem',
-                            cursor: 'pointer',
-                            display: 'inline-flex',
-                            alignItems: 'center',
-                            gap: '0.3rem',
-                            transition: 'all 0.2s'
-                          }}
-                          onMouseEnter={(e) => e.currentTarget.style.background = 'rgba(6, 182, 212, 0.25)'}
-                          onMouseLeave={(e) => e.currentTarget.style.background = 'rgba(6, 182, 212, 0.15)'}
-                        >
-                          <Eye size={14} />
-                          View
-                        </button>
+                      {/* Bill No */}
+                      <td style={{ padding: '1rem 1.25rem', fontWeight: '700', color: 'var(--accent-cyan)', fontSize: '0.95rem' }}>
+                        {bill.billId}
+                      </td>
 
-                        {/* EDIT BUTTON */}
-                        <button
-                          onClick={() => setSelectedBillForEdit(bill)}
-                          title="Update Bill"
-                          style={{
-                            background: 'rgba(99, 102, 241, 0.15)',
-                            border: '1px solid rgba(99, 102, 241, 0.4)',
-                            color: 'var(--text-main)',
-                            padding: '0.45rem 0.75rem',
-                            borderRadius: '8px',
-                            fontWeight: '600',
-                            fontSize: '0.8rem',
-                            cursor: 'pointer',
-                            display: 'inline-flex',
-                            alignItems: 'center',
-                            gap: '0.3rem',
-                            transition: 'all 0.2s'
-                          }}
-                          onMouseEnter={(e) => e.currentTarget.style.background = 'rgba(99, 102, 241, 0.3)'}
-                          onMouseLeave={(e) => e.currentTarget.style.background = 'rgba(99, 102, 241, 0.15)'}
-                        >
-                          <Edit size={14} />
-                          Edit
-                        </button>
+                      {/* Bill Price */}
 
-                        {/* DELETE BUTTON */}
-                        <button
-                          onClick={() => {
-                            if (window.confirm(`Are you sure you want to delete bill "${bill.billName}" (${bill.billId})?`)) {
-                              handleDeleteBill(bill._id);
-                            }
-                          }}
-                          title="Delete Bill"
-                          style={{
-                            background: 'rgba(244, 63, 94, 0.15)',
-                            border: '1px solid rgba(244, 63, 94, 0.4)',
-                            color: 'var(--accent-rose, #f43f5e)',
-                            padding: '0.45rem 0.75rem',
-                            borderRadius: '8px',
-                            fontWeight: '600',
-                            fontSize: '0.8rem',
-                            cursor: 'pointer',
-                            display: 'inline-flex',
-                            alignItems: 'center',
-                            gap: '0.3rem',
-                            transition: 'all 0.2s'
-                          }}
-                          onMouseEnter={(e) => e.currentTarget.style.background = 'rgba(244, 63, 94, 0.3)'}
-                          onMouseLeave={(e) => e.currentTarget.style.background = 'rgba(244, 63, 94, 0.15)'}
-                        >
-                          <Trash2 size={14} />
-                          Delete
-                        </button>
 
-                        {/* PRINT BUTTON */}
-                        <button
-                          onClick={() => setSelectedBillForPrint(bill)}
-                          title="Print Receipt"
-                          style={{
-                            background: 'linear-gradient(135deg, var(--primary), var(--accent-purple))',
-                            border: 'none',
-                            color: '#fff',
-                            padding: '0.45rem 0.75rem',
-                            borderRadius: '8px',
-                            fontWeight: '600',
-                            fontSize: '0.8rem',
-                            cursor: 'pointer',
-                            display: 'inline-flex',
-                            alignItems: 'center',
-                            gap: '0.3rem',
-                            boxShadow: '0 3px 10px rgba(99, 102, 241, 0.3)',
-                            transition: 'all 0.2s'
-                          }}
-                          onMouseEnter={(e) => e.currentTarget.style.transform = 'scale(1.04)'}
-                          onMouseLeave={(e) => e.currentTarget.style.transform = 'scale(1)'}
-                        >
-                          <Printer size={14} />
-                          Print
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
-                ))}
+                      {/* Bill Name & User ID (in place of Customer) */}
+                      <td style={{ padding: '1rem 1.25rem' }}>
+
+                        <div style={{ fontWeight: '700', color: 'var(--text-main)', fontSize: '0.95rem' }}>{bill.billName}</div>
+                      </td>
+
+                      {/* Phone */}
+                      <td style={{ padding: '1rem 1.25rem', color: 'var(--accent-emerald)', fontWeight: '500' }}>
+                        {bill.phoneNumber}
+                      </td>
+
+                      {/* Entry Date */}
+                      <td style={{ padding: '1rem 1.25rem' }}>
+                        <div style={{ fontSize: '0.85rem', color: 'var(--text-main)', fontWeight: '600' }}>
+                          {formatDate(bill.billEntryDate)}
+                        </div>
+                      </td>
+
+                      {/* Comment & Docs */}
+                      <td style={{ padding: '1rem 1.25rem' }}>
+                        {bill.comment && (
+                          <div style={{ fontSize: '0.78rem', color: 'var(--text-muted)', marginBottom: '0.3rem', fontStyle: 'italic', maxWidth: '180px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }} title={bill.comment}>
+                            💬 {bill.comment}
+                          </div>
+                        )}
+                        {bill.images && bill.images.length > 0 ? (
+                          <span
+                            onClick={() => setSelectedBillForView(bill)}
+                            style={{
+                              display: 'inline-flex',
+                              alignItems: 'center',
+                              gap: '0.3rem',
+                              background: 'rgba(6, 182, 212, 0.15)',
+                              color: 'var(--accent-cyan)',
+                              padding: '0.25rem 0.6rem',
+                              borderRadius: '6px',
+                              fontSize: '0.75rem',
+                              fontWeight: '600',
+                              cursor: 'pointer'
+                            }}
+                          >
+                            <ImageIcon size={14} />
+                            {bill.images.length} File(s)
+                          </span>
+                        ) : (
+                          <span style={{ color: 'var(--text-dim)', fontSize: '0.8rem' }}>No Docs</span>
+                        )}
+                      </td>
+
+                      {/* ACTION BUTTONS (VIEW, EDIT, PRINT) */}
+                      <td style={{ padding: '1rem 1.25rem', textAlign: 'center' }}>
+                        <div style={{ display: 'inline-flex', gap: '0.5rem', alignItems: 'center' }}>
+                          {/* VIEW BUTTON */}
+                          <button
+                            onClick={() => setSelectedBillForView(bill)}
+                            title="View Details"
+                            style={{
+                              background: 'rgba(6, 182, 212, 0.15)',
+                              border: '1px solid rgba(6, 182, 212, 0.4)',
+                              color: 'var(--accent-cyan)',
+                              padding: '0.45rem 0.75rem',
+                              borderRadius: '8px',
+                              fontWeight: '600',
+                              fontSize: '0.8rem',
+                              cursor: 'pointer',
+                              display: 'inline-flex',
+                              alignItems: 'center',
+                              gap: '0.3rem',
+                              transition: 'all 0.2s'
+                            }}
+                            onMouseEnter={(e) => e.currentTarget.style.background = 'rgba(6, 182, 212, 0.25)'}
+                            onMouseLeave={(e) => e.currentTarget.style.background = 'rgba(6, 182, 212, 0.15)'}
+                          >
+                            <Eye size={14} />
+                            View
+                          </button>
+
+                          {/* EDIT BUTTON */}
+                          <button
+                            onClick={() => setSelectedBillForEdit(bill)}
+                            title="Update Bill"
+                            style={{
+                              background: 'rgba(99, 102, 241, 0.15)',
+                              border: '1px solid rgba(99, 102, 241, 0.4)',
+                              color: 'var(--text-main)',
+                              padding: '0.45rem 0.75rem',
+                              borderRadius: '8px',
+                              fontWeight: '600',
+                              fontSize: '0.8rem',
+                              cursor: 'pointer',
+                              display: 'inline-flex',
+                              alignItems: 'center',
+                              gap: '0.3rem',
+                              transition: 'all 0.2s'
+                            }}
+                            onMouseEnter={(e) => e.currentTarget.style.background = 'rgba(99, 102, 241, 0.3)'}
+                            onMouseLeave={(e) => e.currentTarget.style.background = 'rgba(99, 102, 241, 0.15)'}
+                          >
+                            <Edit size={14} />
+                            Edit
+                          </button>
+
+                          {/* DELETE BUTTON */}
+                          <button
+                            onClick={() => {
+                              if (window.confirm(`Are you sure you want to delete bill "${bill.billName}" (${bill.billId})?`)) {
+                                handleDeleteBill(bill._id);
+                              }
+                            }}
+                            title="Delete Bill"
+                            style={{
+                              background: 'rgba(244, 63, 94, 0.15)',
+                              border: '1px solid rgba(244, 63, 94, 0.4)',
+                              color: 'var(--accent-rose, #f43f5e)',
+                              padding: '0.45rem 0.75rem',
+                              borderRadius: '8px',
+                              fontWeight: '600',
+                              fontSize: '0.8rem',
+                              cursor: 'pointer',
+                              display: 'inline-flex',
+                              alignItems: 'center',
+                              gap: '0.3rem',
+                              transition: 'all 0.2s'
+                            }}
+                            onMouseEnter={(e) => e.currentTarget.style.background = 'rgba(244, 63, 94, 0.3)'}
+                            onMouseLeave={(e) => e.currentTarget.style.background = 'rgba(244, 63, 94, 0.15)'}
+                          >
+                            <Trash2 size={14} />
+                            Delete
+                          </button>
+
+                          {/* PRINT BUTTON */}
+                          <button
+                            onClick={() => setSelectedBillForPrint(bill)}
+                            title="Print Receipt"
+                            style={{
+                              background: 'linear-gradient(135deg, var(--primary), var(--accent-purple))',
+                              border: 'none',
+                              color: '#fff',
+                              padding: '0.45rem 0.75rem',
+                              borderRadius: '8px',
+                              fontWeight: '600',
+                              fontSize: '0.8rem',
+                              cursor: 'pointer',
+                              display: 'inline-flex',
+                              alignItems: 'center',
+                              gap: '0.3rem',
+                              boxShadow: '0 3px 10px rgba(99, 102, 241, 0.3)',
+                              transition: 'all 0.2s'
+                            }}
+                            onMouseEnter={(e) => e.currentTarget.style.transform = 'scale(1.04)'}
+                            onMouseLeave={(e) => e.currentTarget.style.transform = 'scale(1)'}
+                          >
+                            <Printer size={14} />
+                            Print
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
               </tbody>
             </table>
           </div>

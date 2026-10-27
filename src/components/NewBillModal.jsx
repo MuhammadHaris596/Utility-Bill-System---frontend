@@ -3,6 +3,7 @@ import axios from 'axios';
 import { X, Upload, Plus, FileText, Calendar, Hash, User, Phone, CheckCircle, AlertCircle } from 'lucide-react';
 import AutocompleteInput from './AutocompleteInput';
 import ToggleSwitch from './ToggleSwitch';
+import Swal from 'sweetalert2';
 
 const NewBillModal = ({ isOpen, onClose, onBillCreated }) => {
   const [formData, setFormData] = useState({
@@ -302,11 +303,15 @@ const NewBillModal = ({ isOpen, onClose, onBillCreated }) => {
               value={formData.comment}
               onChange={handleChange}
               onKeyDown={(e) => {
-                if (e.key === 'Enter' && !e.shiftKey) {
-                  e.preventDefault();
-                  if (e.target.form) {
-                    e.target.form.requestSubmit();
+                if (e.key === 'Enter') {
+                  const isMobile = /Mobi|Android/i.test(navigator.userAgent);
+                  if (!e.shiftKey && !isMobile) {
+                    e.preventDefault();
+                    if (e.target.form) {
+                      e.target.form.requestSubmit();
+                    }
                   }
+                  // Allow newline for Shift+Enter or on mobile keyboards
                 }
               }}
               placeholder="e.g. Paid via online bank transfer (Shift + Enter for new line)"

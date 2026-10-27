@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { X, Printer, Edit, Trash2, Calendar, User, Phone, Tag, Hash, FileText, CheckCircle, ExternalLink, Image as ImageIcon, ChevronLeft, ChevronRight, Eye } from 'lucide-react';
+import Swal from 'sweetalert2';
 import PrintBillModal from './PrintBillModal';
 import { formatDatePK, getRecordNumber } from '../utils/billUtils';
 
@@ -142,8 +143,8 @@ const ViewBillModal = ({ bill, onClose, onEdit, onDelete, showEdit = true, showD
               </div>
             </div>
 
-            
-           
+
+
           </div>
 
           {/* Detail Cards Grid */}
@@ -172,7 +173,7 @@ const ViewBillModal = ({ bill, onClose, onEdit, onDelete, showEdit = true, showD
                   {bill.billName}
                 </span>
               </div>
-             
+
               <div style={{ fontSize: '0.85rem', color: 'var(--accent-emerald)', marginTop: '0.2rem', display: 'flex', alignItems: 'center', gap: '0.3rem' }}>
                 <Phone size={13} />
                 {bill.phoneNumber}
@@ -274,7 +275,7 @@ const ViewBillModal = ({ bill, onClose, onEdit, onDelete, showEdit = true, showD
                 if (images.length > 0) {
                   setSelectedImageIndex(0);
                 } else {
-                  alert('No attached images for this bill. You can view printable bill details via Print Bill.');
+                  Swal.fire({ icon: 'info', title: 'No Images', text: 'No attached images for this bill. You can view printable bill details via Print Bill.' });
                 }
               }}
               style={{

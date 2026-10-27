@@ -500,11 +500,15 @@ const EditBillModal = ({ bill, isOpen, onClose, onBillUpdated }) => {
               value={formData.comment}
               onChange={handleChange}
               onKeyDown={(e) => {
-                if (e.key === 'Enter' && !e.shiftKey) {
-                  e.preventDefault();
-                  if (e.target.form) {
-                    e.target.form.requestSubmit();
+                if (e.key === 'Enter') {
+                  const isMobile = /Mobi|Android/i.test(navigator.userAgent);
+                  if (!e.shiftKey && !isMobile) {
+                    e.preventDefault();
+                    if (e.target.form) {
+                      e.target.form.requestSubmit();
+                    }
                   }
+                  // Allow newline for Shift+Enter or on mobile keyboards
                 }
               }}
               placeholder="e.g. Paid via online transfer (Shift + Enter for new line)"
